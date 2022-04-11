@@ -1,0 +1,36 @@
+"0","params = read_csv(here(""analysis/data/raw_data/LifeHistoryParameters.csv""))"
+"1","[1mRows: [22m[34m10[39m [1mColumns: [22m[34m4[39m
+"
+"1","[36m--[39m [1mColumn specification[22m [36m---------------------------------------------------------------------------------------------------------------------[39m
+[1mDelimiter:[22m "",""
+[31mchr[39m (3): Species, Parameter, Source
+[32mdbl[39m (1): Value
+"
+"1","
+[36mi[39m Use `spec()` to retrieve the full column specification for this data.
+[36mi[39m Specify the column types or set `show_col_types = FALSE` to quiet this message.
+"
+"0","rec_goals = tibble(Species = c(""Chinook"", ""Steelhead""),"
+"0","                   Scenario = ""CBPTF 2020"","
+"0","                   Escapement = c(3600, 3400)) %>%"
+"0","  inner_join(params %>%"
+"0","               mutate(Parameter = recode(Parameter,"
+"0","                                         ""Female Ratio"" = ""prop_fem"","
+"0","                                         ""Redds/Female"" = ""redd_per_fem"","
+"0","                                         ""Fecundity"" = ""fecund"","
+"0","                                         ""Egg:Parr"" = ""egg_to_parr"","
+"0","                                         ""Parr:Presmolt"" = ""parr_to_presmolt"")) %>%"
+"0","               pivot_wider(id_cols = ""Species"","
+"0","                           names_from = ""Parameter"","
+"0","                           values_from = ""Value"")) %>%"
+"0","  mutate(`Female Escapement` = Escapement * prop_fem,"
+"0","         Redds = `Female Escapement` * redd_per_fem,"
+"0","         Eggs = Redds * fecund,"
+"0","         `Summer Juveniles` = Eggs * egg_to_parr,"
+"0","         `Winter Juveniles` = `Summer Juveniles` * parr_to_presmolt) %>%"
+"0","  select(-c(prop_fem:parr_to_presmolt)) %>%"
+"0","  pivot_longer(cols = c(Escapement, `Female Escapement`:`Winter Juveniles`),"
+"0","               names_to = ""LifeStage"","
+"0","               values_to = ""Abundance"")"
+"1","[38;5;255mJoining, by = ""Species""[39m
+"
