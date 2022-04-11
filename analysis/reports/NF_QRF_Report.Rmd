@@ -19,7 +19,7 @@ author:
       correspondence: false
   - Kevin E. See:
       email: Kevin.See@dfw.wa.gov
-      institute: wdfw
+      institute: [wdfw]
       correspondence: false
 institute:
   - mhe_challis: Mount Hood Environmental, PO Box 1303, Challis, Idaho, 83226, USA
@@ -36,13 +36,13 @@ output:
       collapsed: yes
       smooth_scroll: yes
     number_sections: yes
-#    pandoc_args:
-#    - --lua-filter=../templates/scholarly-metadata.lua
-#    - --lua-filter=../templates/author-info-blocks.lua
-#    - --lua-filter=../templates/pagebreak.lua  
+    pandoc_args:
+    - --lua-filter=../templates/scholarly-metadata.lua
+    - --lua-filter=../templates/author-info-blocks.lua
+    - --lua-filter=../templates/pagebreak.lua  
 csl: "../templates/american-fisheries-society.csl"
 bibliography:
-  - OldemeyerLibrary.bib
+  - AckermanLibrary.bib
 ---
 
 <!-- the following inserts MHE logo into header -->
@@ -180,7 +180,9 @@ rec_goals = tibble(Species = c("Chinook", "Steelhead"),
 
 ```
 
-Life-stage specific capacity requirements were estimated using a Generalized Capacity Model described in Appendix C of @IdahoOSCTeam2019. The model uses a combination of empirical and literature-based parameter estimates (Table \@ref(tab:param-tab)) to determine the capacity required to achieve a given adult abundance goal. We used adult escapement goals of `r prettyNum(rec_goals$Abundance[rec_goals$Species == "Chinook" & rec_goals$LifeStage == "Escapement"], big.mark = ",")` for Chinook salmon and `r prettyNum(rec_goals$Abundance[rec_goals$Species == "Steelhead" & rec_goals$LifeStage == "Escapement"], big.mark = ",")` for steelhead. These escapement goals are considered high-range goals and are intended to represent *"healthy and harvestable abundance levels that would sustain very high levels of species viability, significant fishery opportunities and harvest, and a fuller range of ecological values"* [@CBPTF2020]. Briefly, adult escapement goals are multiplied step-wise through the applicable parameter values in Table \@ref(tab:param-tab) to determine the necessary abundance for a given life-stage to produce the target adult abundance. For example, the number of redds necessary for recovery is calculated by multiplying the adult escapement goal by the female ratio and the estimated redds per female. Sources for each parameter estimate are provided in Table \@ref(tab:param-tab); however, those values can be modified if updated or in-basin estimates with empirical support are available.
+Life-stage specific capacity requirements were estimated using a Generalized Capacity Model described in Appendix C of @IdahoOSCTeam2019. The model uses a combination of empirical and literature-based parameter estimates (Table \@ref(tab:param-tab)) to determine the capacity required to achieve a given adult abundance goal. We used adult escapement goals of `r prettyNum(rec_goals$Abundance[rec_goals$Species == "Chinook" & rec_goals$LifeStage == "Escapement"], big.mark = ",")` for Chinook salmon and `r prettyNum(rec_goals$Abundance[rec_goals$Species == "Steelhead" & rec_goals$LifeStage == "Escapement"], big.mark = ",")` for steelhead. These escapement goals are considered high-range goals and are intended to represent *"healthy and harvestable abundance levels that would sustain very high levels of species viability, significant fishery opportunities and harvest, and a fuller range of ecological values"* [@CBPTF2020]. Briefly, adult escapement goals are multiplied step-wise through the applicable parameter values in Table \@ref(tab:param-tab) to determine the necessary abundance for a given life-stage to produce the target adult abundance. For example, the number of redds necessary for recovery is calculated by multiplying the adult escapement goal by the female ratio and the estimated redds per female. Sources for each parameter estimate are provided in Table \@ref(tab:param-tab); however, those values can be modified if updated or in-basin estimates with empirical support are available. 
+
+<!-- This is a thought to myself. -->
 
 ```{r param-tab}
 params %>%

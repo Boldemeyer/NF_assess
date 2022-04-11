@@ -1,4 +1,4 @@
-# Authors: Bryce Oldemeyer, orig script MA & KS
+# Authors: Bryce Oldemeyer, original script Mike Ackerman & Kevin See
 # Purpose: Prep data to be used in the NF assessment
 # Created: 4/07/2020
 # Last Modified: --
@@ -35,8 +35,7 @@ huc12_sf = st_read(paste0(nas_prefix, "main/data/habitat/watershed_boundaries/WB
 # win_juv_sf = st_read(paste0(nas_prefix, "main/data/qrf/extrapolations/Rch_Cap_RF_juv_winter.gpkg")) %>% st_transform(ww_crs)
 # redd_sf = st_read(paste0(nas_prefix, "main/data/qrf/extrapolations/Rch_Cap_RF_redds.gpkg")) %>% st_transform(ww_crs)
 
-# if needed, these .gpkg files can be saved locally to decrease read times, e.g.,
-# on Mike's machine...
+# if needed, these .gpkg files can be saved locally to decrease read times
 
 sum_juv_sf = st_read("C:/Users/bolde/Documents/Git/QRF_extrapolations/Rch_Cap_RF_juv_summer_dash.gpkg") %>%
   st_transform(NF_crs)
@@ -60,7 +59,7 @@ ggplot(data = NF_huc_sf) +
   geom_sf()
 
 #-----------------------------------------------------------------
-# filter WW QRF extrapolations
+# filter NF QRF extrapolations
 
 # summer parr
 NF_sum_sf = sum_juv_sf %>%
@@ -142,25 +141,6 @@ NF_rch_sf = rch_200 %>%
   st_transform(NF_crs)
 
 ggplot(NF_rch_sf) + geom_sf()
-
-# compare with the stream network provided by CTUIR, this is for entire Walla Walla
-#ctuir_rch_sf = st_read(here("analysis/data/raw_data/stream_network/CTUIRStillwaterStreamNetwork.shp")) %>%
-#  st_transform(uww_crs)
-
-#ggplot(ctuir_rch_sf) + geom_sf()
-
-# read in UWW base referencing geodatabase
-#uww_gdb_filepath = here("analysis/data/raw_data/stream_network/UWW_base_referencing.gdb")
-#uww_gdb_layers = ogrListLayers(uww_gdb_filepath)
-
-# extract UWW_streams_24k layer from geodatabase
-#uww_base_ref_streams_24k  = readOGR(dsn = uww_gdb_filepath,
-#                                   layer = "UWW_streams_24k") %>%
-#  st_as_sf() %>%
-#  st_transform(uww_crs)
-
-#ggplot(uww_base_ref_streams_24k) + geom_sf()
-# Thankfully, the base reference streams and our rch_200 appear to be the same linear networks!!!
 
 #-----------------------------------------------------------------
 # save data for this repository

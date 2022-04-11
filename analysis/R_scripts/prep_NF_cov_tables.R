@@ -1,7 +1,7 @@
-# Authors: Mike Ackerman
+# Authors: Bryce Oldemeyer, original script Mike Ackerman 
 # Purpose: Prep QRF and extrapolation model covariate tables from QRFcapacity repo
-# Created: 2/15/2022
-# Last Modified: 2/15/2022
+# Created: 4/10/2022
+# Last Modified: 4/11/2022
 # Notes:
 
 #-----------------------------------------------------------------
