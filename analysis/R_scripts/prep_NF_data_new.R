@@ -35,21 +35,12 @@ sum_juv_sf = st_read(paste0(nas_prefix, "main/data/qrf/gitrepo_data/output/gpkg/
 win_juv_sf = st_read(paste0(nas_prefix, "main/data/qrf/gitrepo_data/output/gpkg/Rch_Cap_RF_No_elev_juv_winter.gpkg")) %>% st_transform(NF_crs)
 redd_sf = st_read(paste0(nas_prefix, "main/data/qrf/gitrepo_data/output/gpkg/Rch_Cap_RF_No_elev_redds.gpkg")) %>% st_transform(NF_crs)
 
-# if needed, these .gpkg files can be saved locally to decrease read times
-
-#sum_juv_sf = st_read("C:/Users/bolde/Documents/Git/QRF_extrapolations/Rch_Cap_RF_juv_summer_dash.gpkg") %>%
-#  st_transform(NF_crs)
-#win_juv_sf = st_read("C:/Users/bolde/Documents/Git/QRF_extrapolations/Rch_Cap_RF_juv_winter.gpkg") %>%
-#  st_transform(NF_crs)
-#redd_sf = st_read("C:/Users/bolde/Documents/Git/QRF_extrapolations/Rch_Cap_RF_redds.gpkg") %>%
-#  st_transform(NF_crs)
-
 # these are too large to reasonably plot
 
 #-----------------------------------------------------------------
 # Only want NF Salmon, and compute total capacity at each reach
 # note that this does NOT filter for species ranges, yet
-NF_huc_sf = st_read(here("C:/Users/bolde/Documents/Git/NF_assess/analysis/data/raw_data/watershed_boundary/NF_Watershed_Boundary.shp")) %>%
+NF_huc_sf = st_read(here("analysis/data/raw_data/watershed_boundary/NF_Watershed_Boundary.shp")) %>%
   st_transform(NF_crs) %>%
   mutate(HUC8 = str_sub(HUC12, 1, 8),
          HUC10 = str_sub(HUC12, 1, 10))
@@ -127,8 +118,6 @@ ggplot(NF_redd_sf) + geom_sf()
 #-----------------------------------------------------------------
 # get 200m reach layer for this area; contains a bunch of habitat metrics for the 200m reaches
 # this dataset is in the QRFcapacity repo
-#load("C:/Users/bolde/Documents/Git/QRFCapacity/data/rch_200.rda")
-
 load(paste0(nas_prefix, "main/data/qrf/gitrepo_data/input/rch_200.rda"))
 
 # alternatively, by installing QRFcapacity R package...
@@ -145,39 +134,34 @@ NF_rch_sf = rch_200 %>%
 ggplot(NF_rch_sf) + geom_sf()
 
 #-----------------------------------------------------------------
-# save data for this repository
+
 save(NF_sum_sf,
      NF_win_sf,
      NF_redd_sf,
-     file = "C:/Users/bolde/Documents/Git/NF_assess/analysis/data/derived_data/NF_qrf_extrapolations.rda")
+     file = here("analysis/data/derived_data/NF_qrf_extrapolations.rda"))
 
 save(NF_huc_sf,
      NF_rch_sf,
-     file = "C:/Users/bolde/Documents/Git/NF_assess/analysis/data/derived_data/NF_spatial.rda")
+     file = here("analysis/data/derived_data/NF_spatial.rda"))
 
 #-----------------------------------------------------------------
 # save geopackages for use in QGIS
 st_write(NF_sum_sf,
-         dsn = "C:/Users/bolde/Documents/Git/NF_assess/analysis/data/derived_data/NF_juv_sum_qrf.gpkg",
+         dsn = here("analysis/data/derived_data/NF_juv_sum_qrf.gpkg"),
          append = F)
 st_write(NF_win_sf,
-         dsn = "C:/Users/bolde/Documents/Git/NF_assess/analysis/data/derived_data/NF_juv_win_qrf.gpkg",
+         dsn = here("analysis/data/derived_data/NF_juv_win_qrf.gpkg"),
          append = F)
 st_write(NF_redd_sf,
-         dsn = "C:/Users/bolde/Documents/Git/NF_assess/analysis/data/derived_data/NF_redd_qrf.gpkg",
+         dsn = here("analysis/data/derived_data/NF_redd_qrf.gpkg"),
          append = F)
 st_write(NF_rch_sf,
-         dsn = "C:/Users/bolde/Documents/Git/NF_assess/analysis/data/derived_data/NF_rch_200.gpkg",
+         dsn = here("analysis/data/derived_data/NF_rch_200.gpkg"),
          append = F)
 st_write(NF_huc_sf,
-         dsn = "C:/Users/bolde/Documents/Git/NF_assess/analysis/data/derived_data/NF_huc_bndry.gpkg",
+         dsn = here("analysis/data/derived_data/NF_huc_bndry.gpkg"),
          append = F)
-#st_write(NF_base_ref_streams_24k,
-#         dsn = "C:/Users/bolde/Documents/Git/NF_assess/analysis/data/derived_data/NF_base_ref_streams.gpkg",
-#         append = F)
 
-#-----------------------------------------------------------------
-# just a preliminary plot
 
 # pick a river color
 river_color = "lightskyblue1"

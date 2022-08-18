@@ -9,23 +9,15 @@ author:
       email: mike.ackerman@mthoodenvironmental.com
       institute: [mhe_mccall]
       correspondence: false
-  - Tara E. Blackman:
-      email: tara.blackman@mthoodenvironmenal.com
-      institute: [mhe_sandy]
-      correspondence: false
   - Mark Roes:
       email: mark.roes@mthoodenvironmental.com
       institute: [mhe_sandy]
       correspondence: false
-  - Kevin E. See:
-      email: Kevin.See@dfw.wa.gov
-      institute: [wdfw]
-      correspondence: false
+
 institute:
   - mhe_challis: Mount Hood Environmental, PO Box 1303, Challis, Idaho, 83226, USA
   - mhe_mccall: Mount Hood Environmental, PO Box 4282, McCall, Idaho, 83638, USA
   - mhe_sandy: Mount Hood Environmental, 39085 Pioneer Boulevard \#100 Mezzanine, Sandy, Oregon, 97055, USA
-  - wdfw: Washington Department of Fish and Wildife, Fish Program, Science Division, 1111 Washington Street NE, Olympia, Washington, 98501, USA
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   bookdown::html_document2:
@@ -46,13 +38,15 @@ bibliography:
 ---
 
 <!-- the following inserts MHE logo into header -->
+
+```{=html}
 <script>
    $(document).ready(function() {
      $head = $('#header');
      $head.prepend('<img src=\"logo.jpg\" style=\"float: right;width: 150px;\"/>')
    });
 </script>
-
+```
 ```{r setup, echo = FALSE, message = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
@@ -100,11 +94,6 @@ The focal species for the QRF habitat capacity assessment are:
 -   Spring-run Chinook salmon (*Oncorhynchus tshawytscha*; hereafter Chinook salmon)
 -   Middle Columbia River summer steelhead (*O. mykiss*; hereafter steelhead; ESA-listed threatened)
 
-While our habitat capacity models specifically address Chinook salmon and steelhead, any uplift in habitat for these species are also expected to uplift:
-
--   Columbia River bull trout (*Salvelinus confluentus*; ESA-listed threatened)
--   Pacific lamprey (*Lampetra tridentata*)
-
 ## Study Area
 
 NF Salmon
@@ -113,16 +102,46 @@ NF Salmon
 
 -   NF Salmon
     -   NF Salmon
-    -   NF Slamon
+    -   NF Salmon
 
 # Habitat Capacity Assessment
 
-```{r load-data}
+```{r load-data, results = 'hide'}
 # NF Salmon QRF extrapolations
 load(here("analysis/data/derived_data/NF_qrf_extrapolations.rda"))
 
 # Project area polygons and 200m layer (with habitat attributes) within project area
 load(here("analysis/data/derived_data/NF_spatial.rda"))
+
+# Species domains for the NF salmon manually modified in QGIS with expert knowledge from Jessica Beulow - IDFG
+
+NF_crs = st_crs(4326) # WGS84
+NF_sp_domain_sf=st_read(here("analysis/data/raw_data/NF_sp_Domain.gpkg"),quiet = TRUE) %>% st_transform(NF_crs)
+
+NF_sp_domain_df = NF_sp_domain_sf %>%
+  st_drop_geometry() %>%
+  as_tibble()
+
+
+# append correct domains 
+NF_sum_sf = NF_sum_sf %>%
+  rename(chnk_strmnt = chnk,
+         sthd_strmnt = sthd) %>%
+  left_join(., NF_sp_domain_df %>%
+              select(c("chnk","sthd","UniqueID")))
+
+NF_win_sf = NF_win_sf %>%
+  rename(chnk_strmnt = chnk,
+         sthd_strmnt = sthd) %>%
+  left_join(., NF_sp_domain_df %>%
+              select(c("chnk","sthd","UniqueID")))
+
+NF_redd_sf = NF_redd_sf %>%
+  rename(chnk_strmnt = chnk,
+         sthd_strmnt = sthd) %>%
+  left_join(., NF_sp_domain_df %>%
+              select(c("chnk","sthd","UniqueID")))
+
 
 # convert sf objects to tibbles
 NF_sum_df = NF_sum_sf %>%
@@ -137,11 +156,12 @@ NF_redd_df = NF_redd_sf %>%
   st_drop_geometry() %>%
   as_tibble()
 
+
 ```
 
 ## Approach Overview
 
-The habitat capacity assessment is focused on Chinook salmon and steelhead. Habitat capacity deficits (e.g., Figure \@ref(fig:capacity-schematic)) resulting from limitations in habitat quantity and/or quality were assessed for three life stages of Chinook salmon and steelhead: 1) spawning (redd) capacity, 2) juvenile summer rearing capacity, and 3) juvenile winter rearing capacity. First, the capacity required to meet adult abundance escapement goals was estimated for each of the three life-stages using a Generalized Capacity Model framework [see Appendix C in @IdahoOSCTeam2019]. Then, the currently available habitat capacity was estimated using a quantile random forest (QRF) approach [@See2021] applied at each life-stage. Next, capacity limitations were quantified by subtracting required capacity from available capacity, providing an estimate of habitat capacity deficit by species and life-stage. Finally, these results can determine the target conditions required to achieve adult escapement goals, and inform prioritization by identifying species and life-stage specific bottlenecks to population productivity in the North Fork watershed.
+The habitat capacity assessment is focused on Chinook salmon and steelhead. Habitat capacity deficits (e.g., Figure \@ref(fig:capacity-schematic)) resulting from limitations in habitat quantity and/or quality were assessed for three life stages of Chinook salmon and steelhead: 1) spawning (redd) capacity, 2) juvenile summer rearing capacity, and 3) juvenile winter rearing capacity. First, the capacity required to meet adult abundance escapement goals was estimated for each of the three life-stages using a Generalized Capacity Model framework [see Appendix C in @IdahoOSCTeam2019]. Then, the currently available habitat capacity was estimated using a quantile random forest (QRF) approach [@See2021] applied at each life-stage. Next, capacity limitations were quantified by subtracting required capacity from available capacity, providing an estimate of habitat capacity deficit by species and life-stage. Finally, these results can determine the target conditions required to achieve adult escapement goals, and inform prioritization by identifying species and life-stage specific bottlenecks to population productivity in the North Fork Salmon watershed.
 
 ```{r capacity-schematic, out.width = "100%", fig.cap = "Schematic depicting an ideal scenario on the left with no limiting factors, while the right depicts a river with significant limiting factors resulting in reduced habitat capacity and production."}
 knitr::include_graphics("../figures/hab-capac-fig.png")
@@ -150,45 +170,202 @@ knitr::include_graphics("../figures/hab-capac-fig.png")
 
 ## Required Capacity
 
---- Need to update GCM & escapement goals for NF Salmon ---
-
 ```{r get-params}
-params = read_csv(here("analysis/data/raw_data/LifeHistoryParameters.csv"))
+
+params = read_csv(here("analysis/data/raw_data/LifeHistoryParameters_0622.csv"))
+
+#define target escapement
+target.esc = c(625,625)
+n.sim = 5000
+
+set.seed(352)
+#Simulate the required abundances by life stage
+
+#With normal distribution - no stoch for egg:parr, parr:presmolt
+reqs = tibble(Sim_number = rep(1:n.sim,2),
+              Species = c(rep("Chinook",n.sim),rep("Steelhead",n.sim)),
+              Escapement = c(rep(target.esc[1],n.sim), rep(target.esc[2],n.sim)),
+              f_ratio = c(rnorm(n.sim, params$Value[1],params$SD[1]),
+                          rnorm(n.sim, params$Value[7],params$SD[7])),
+              redds_f = c(rnorm(n.sim, params$Value[2],params$SD[2]),
+                          rnorm(n.sim, params$Value[8],params$SD[8])),
+              fecund = c(rnorm(n.sim, params$Value[3],params$SD[3]),
+                          rnorm(n.sim, params$Value[9],params$SD[9])),
+              egg_to_parr = c(rep(params$Value[4],n.sim),
+                          rep(params$Value[10],n.sim)),
+              parr_to_presmolt = c(rep(params$Value[5],n.sim),
+                          rep(params$Value[11],n.sim)),
+              egg_to_smolt = c(rep(params$Value[6],n.sim),
+                               rep(params$Value[12],n.sim))) %>%
+  mutate(f_ratio = ifelse(f_ratio < params$Min[1] & Species == "Chinook", params$Min[1],
+                          ifelse(f_ratio > params$Max[1] & Species == "Chinook", params$Max[1],
+                                 ifelse(f_ratio < params$Min[7] & Species == "Steelhead", params$Min[7],
+                                        ifelse(f_ratio > params$Max[7] & Species == "Steelhead", params$Max[7], f_ratio)))),
+         redds_f = ifelse(redds_f < params$Min[2] & Species == "Chinook", params$Min[2],
+                          ifelse(redds_f > params$Max[2] & Species == "Chinook", params$Max[2],
+                                 ifelse(redds_f < params$Min[8] & Species == "Steelhead", params$Min[8],
+                                        ifelse(redds_f > params$Max[8] & Species == "Steelhead", params$Max[8], redds_f)))),
+         fecund = ifelse(fecund < params$Min[3] & Species == "Chinook", params$Min[3],
+                          ifelse(fecund > params$Max[3] & Species == "Chinook", params$Max[3],
+                                 ifelse(fecund < params$Min[9] & Species == "Steelhead", params$Min[9],
+                                        ifelse(fecund > params$Max[9] & Species == "Steelhead", params$Max[9], fecund)))),
+         # egg_to_parr = ifelse(egg_to_parr < params$Min[4] & Species == "Chinook", params$Min[4],
+         #                  ifelse(egg_to_parr > params$Max[4] & Species == "Chinook", params$Max[4],
+         #                         ifelse(egg_to_parr < params$Min[9] & Species == "Steelhead", params$Min[9],
+         #                                ifelse(egg_to_parr > params$Max[9] & Species == "Steelhead", params$Max[9], egg_to_parr)))),
+         # parr_to_presmolt = ifelse(parr_to_presmolt < params$Min[5] & Species == "Chinook", params$Min[5],
+         #                  ifelse(parr_to_presmolt > params$Max[5] & Species == "Chinook", params$Max[5],
+         #                         ifelse(parr_to_presmolt < params$Min[10] & Species == "Steelhead", params$Min[10],
+         #                                ifelse(parr_to_presmolt > params$Max[10] & Species == "Steelhead", params$Max[10], parr_to_presmolt))))
+         ) %>%
+  mutate(Female_escapement = Escapement * f_ratio,
+         Redds = Female_escapement * redds_f,
+         Eggs = Redds * fecund,
+         Summer_juv = Eggs * egg_to_parr,
+         Winter_juv = Summer_juv * parr_to_presmolt,
+         Smolts = Eggs * egg_to_smolt
+           )
+
+
+#With truncated uniform distribution
+# reqs = tibble(Sim_number = rep(1:n.sim,2),
+#               Species = c(rep("Chinook",n.sim),rep("Steelhead",n.sim)),
+#               Escapement = c(rep(target.esc[1],n.sim), rep(target.esc[2],n.sim)),
+#               f_ratio = c(runif(n.sim, params$Value[1]-params$SD[1], params$Value[1]+params$SD[1]),
+#                           runif(n.sim, params$Value[6]-params$SD[6], params$Value[6]+params$SD[6])),
+#               redds_f = c(runif(n.sim, params$Value[2]-params$SD[2], params$Value[2]+params$SD[2]),
+#                           runif(n.sim, params$Value[7]-params$SD[7], params$Value[7]+params$SD[7])),
+#               fecund = c(runif(n.sim, params$Value[3]-params$SD[3], params$Value[3]+params$SD[3]),
+#                           runif(n.sim, params$Value[8]-params$SD[8],                     params$Value[8]+params$SD[8])),
+#               egg_to_parr = c(runif(n.sim, params$Value[4], params$Value[4]),
+#                           runif(n.sim, params$Value[9], params$Value[9])),
+#               parr_to_presmolt = c(runif(n.sim, params$Value[5], params$Value[5]),
+#                           runif(n.sim, params$Value[10], params$Value[10]))) %>%
+#   mutate(Female_escapement = Escapement * f_ratio,
+#          Redds = Female_escapement * redds_f,
+#          Eggs = Redds * fecund,
+#          Summer_juv = Eggs * egg_to_parr,
+#          Winter_juv = Summer_juv * parr_to_presmolt
+#            )
+
+
+#Summarize sim results
+reqs_summary = reqs %>%
+  group_by(Species) %>%
+  summarize(Mean_Female_esc = mean(Female_escapement),
+            Female_escapement_se = sd(Female_escapement),
+            Female_escapement_80L = quantile(Female_escapement, .1),
+            Female_escapement_80U = quantile(Female_escapement, .9),
+            Female_escapement_90L = quantile(Female_escapement, 0.05),
+            Female_escapement_90U = quantile(Female_escapement, 0.95),
+            Mean_Redds = mean(Redds),
+            Redds_se = sd(Redds),
+            Redds_80L = quantile(Redds, .1),
+            Redds_80U = quantile(Redds, .9),
+            Redds_90L = quantile(Redds, 0.05),
+            Redds_90U = quantile(Redds, 0.95),
+            Mean_Eggs = mean(Eggs),
+            Eggs_se = sd(Eggs),
+            Eggs_80L = quantile(Eggs, .1),
+            Eggs_80U = quantile(Eggs, .9),
+            Eggs_90L = quantile(Eggs, 0.05),
+            Eggs_90U = quantile(Eggs, 0.95),
+            Mean_Summer_juv = mean(Summer_juv),
+            Summer_juv_se = sd(Summer_juv),
+            Summer_juv_80L = quantile(Summer_juv, .1),
+            Summer_juv_80U = quantile(Summer_juv, .9),
+            Summer_juv_90L = quantile(Summer_juv, 0.05),
+            Summer_juv_90U = quantile(Summer_juv, 0.95),
+            Mean_Winter_juv = mean(Winter_juv),
+            Winter_juv_se = sd(Winter_juv),
+            Winter_juv_80L = quantile(Winter_juv, .1),
+            Winter_juv_80U = quantile(Winter_juv, .9),
+            Winter_juv_90L = quantile(Winter_juv, 0.05),
+            Winter_juv_90U = quantile(Winter_juv, 0.95),
+            Mean_Smolts = mean(Smolts),
+            Smolts_se = sd(Smolts),
+            Smolts_90L = quantile(Smolts, 0.1),
+            Smolts_90U = quantile(Smolts, 0.9)
+            )
+
+reqs_plotdat = reqs %>%
+  left_join(reqs_summary, by = 'Species')
+
+
+reddsplot = ggplot(reqs_plotdat)+
+  geom_density(aes(x=Redds))+
+  geom_vline(aes(xintercept=Redds_90L), linetype = 'dotted')+
+  geom_vline(aes(xintercept=Redds_90U), linetype = 'dotted')+
+  facet_wrap(~Species) +
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank())
+
+summer_juvsplot = ggplot(reqs_plotdat)+
+  geom_density(aes(x=Summer_juv))+
+  geom_vline(aes(xintercept=Summer_juv_90L), linetype = 'dotted')+
+  geom_vline(aes(xintercept=Summer_juv_90U), linetype = 'dotted')+
+  facet_wrap(~Species) +
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank())
+
+winter_juvsplot = ggplot(reqs_plotdat)+
+  geom_density(aes(x=Winter_juv))+
+  geom_vline(aes(xintercept=Winter_juv_90L), linetype = 'dotted')+
+  geom_vline(aes(xintercept=Winter_juv_90U), linetype = 'dotted')+
+  facet_wrap(~Species) +
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank())
+
+smoltsplot = ggplot(reqs_plotdat)+
+  geom_density(aes(x=Smolts))+
+  geom_vline(aes(xintercept=Smolts_90L), linetype = 'dotted')+
+  geom_vline(aes(xintercept=Smolts_90U), linetype = 'dotted')+
+  facet_wrap(~Species) +
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank())
+
+sar_req = target.esc/reqs_summary$Mean_Smolts
 
 rec_goals = tibble(Species = c("Chinook", "Steelhead"),
                    Scenario = "CBPTF 2020",
-                   Escapement = c(625, 625)) %>%
+                   Escapement = target.esc) %>%
   inner_join(params %>%
                mutate(Parameter = recode(Parameter,
                                          "Female Ratio" = "prop_fem",
                                          "Redds/Female" = "redd_per_fem",
                                          "Fecundity" = "fecund",
                                          "Egg:Parr" = "egg_to_parr",
-                                         "Parr:Presmolt" = "parr_to_presmolt")) %>%
+                                         "Parr:Presmolt" = "parr_to_presmolt",
+                                         "Egg:Smolt" = "egg_to_smolt")) %>%
                pivot_wider(id_cols = "Species",
                            names_from = "Parameter",
                            values_from = "Value")) %>%
-  mutate(`Female Escapement` = Escapement * prop_fem,
-         Redds = `Female Escapement` * redd_per_fem,
-         Eggs = Redds * fecund,
-         `Summer Juveniles` = Eggs * egg_to_parr,
-         `Winter Juveniles` = `Summer Juveniles` * parr_to_presmolt) %>%
-  select(-c(prop_fem:parr_to_presmolt)) %>%
-  pivot_longer(cols = c(Escapement, `Female Escapement`:`Winter Juveniles`),
+  mutate(`Female Escapement` = reqs_summary$Mean_Female_esc,
+         Redds = reqs_summary$Mean_Redds,
+         Eggs = reqs_summary$Mean_Eggs,
+         `Summer Juveniles` = reqs_summary$Mean_Summer_juv,
+         `Winter Juveniles` = reqs_summary$Mean_Winter_juv,
+         Smolts = reqs_summary$Mean_Smolts) %>%
+  select(-c(prop_fem:egg_to_smolt)) %>%
+  pivot_longer(cols = c(Escapement, `Female Escapement`:Smolts),
                names_to = "LifeStage",
-               values_to = "Abundance")
+               values_to = "Abundance") %>%
+  mutate(SE = c(NA,as.numeric(select(reqs_summary, ends_with("se"))[1,]),NA, as.numeric(select(reqs_summary,ends_with("se"))[2,]))) %>%
+  mutate(`90% CI, lower` = c(NA,as.numeric(select(reqs_summary, ends_with("90L"))[1,]),NA, as.numeric(select(reqs_summary,ends_with("90L"))[2,]))) %>%
+  mutate(`90% CI, upper` = c(NA,as.numeric(select(reqs_summary, ends_with("90U"))[1,]),NA, as.numeric(select(reqs_summary,ends_with("90U"))[2,])))
+
+
 
 ```
 
-Life-stage specific capacity requirements were estimated using a Generalized Capacity Model described in Appendix C of @IdahoOSCTeam2019. The model uses a combination of empirical and literature-based parameter estimates (Table \@ref(tab:param-tab)) to determine the capacity required to achieve a given adult abundance goal. We used adult escapement goals of `r prettyNum(rec_goals$Abundance[rec_goals$Species == "Chinook" & rec_goals$LifeStage == "Escapement"], big.mark = ",")` for Chinook salmon and `r prettyNum(rec_goals$Abundance[rec_goals$Species == "Steelhead" & rec_goals$LifeStage == "Escapement"], big.mark = ",")` for steelhead. These escapement goals are considered high-range goals and are intended to represent *"healthy and harvestable abundance levels that would sustain very high levels of species viability, significant fishery opportunities and harvest, and a fuller range of ecological values"* [@CBPTF2020]. Briefly, adult escapement goals are multiplied step-wise through the applicable parameter values in Table \@ref(tab:param-tab) to determine the necessary abundance for a given life-stage to produce the target adult abundance. For example, the number of redds necessary for recovery is calculated by multiplying the adult escapement goal by the female ratio and the estimated redds per female. Sources for each parameter estimate are provided in Table \@ref(tab:param-tab); however, those values can be modified if updated or in-basin estimates with empirical support are available. 
-
-<!-- This is a thought to myself. -->
+Life-stage specific capacity requirements were estimated using a Generalized Capacity Model (GCM) described in Appendix C of @IdahoOSCTeam2019. The model uses a combination of empirical and literature-based parameter estimates (Table \@ref(tab:param-tab)) to determine the capacity required to achieve a given adult abundance goal. We used adult escapement goals of `r prettyNum(rec_goals$Abundance[rec_goals$Species == "Chinook" & rec_goals$LifeStage == "Escapement"], big.mark = ",")` for Chinook salmon and `r prettyNum(rec_goals$Abundance[rec_goals$Species == "Steelhead" & rec_goals$LifeStage == "Escapement"], big.mark = ",")` for steelhead. These escapement goals are considered high-range goals and are intended to represent *"healthy and harvestable abundance levels that would sustain very high levels of species viability, significant fishery opportunities and harvest, and a fuller range of ecological values"* [@CBPTF2020]. The required capacities to reach these goals were estimated using the GCM with a simulation approach to account for expected interannual variation in life history parameters. The simulation was conducted by repeatedly drawing applicable parameters from normal distributions with means and standard deviations defined in Table \@ref(tab:param-tab) and constrained within the range of observed values. Standard deviations for Egg to parr and parr to presmolt survival parameters were set to zero due to small sample sizes, high variability, and potential bias leading to potentially unreliable results. Then, adult escapement goals were multiplied step-wise through the applicable parameter values to obtain capacity requirements by life-stage. For example, the number of redds necessary for recovery was calculated by multiplying the adult escapement goal by the female ratio and the estimated redds per female. We conducted 5,000 simulations, resulting in a range of capacity requirements that were summarized to provide the mean required capacity by life-stage with associated confidence intervals. Sources for each parameter estimate are provided in Table \@ref(tab:param-tab); however, those values can be modified if updated or in-basin estimates with empirical support are available.
 
 ```{r param-tab}
 params %>%
+  select(-Min, -Max) %>%
   kable(booktabs = T,
         digits = 3,
-        align = "lccc",
+        align = "lcccc",
         format.args = list(big.mark = ",",
                            drop0trailing = T),
         caption = "Life history parameters for the generalized capacity model.") %>%
@@ -202,12 +379,14 @@ The resulting estimated habitat capacity requirements are shown in Table \@ref(t
 
 ```{r require-tab}
 rec_goals %>%
+  mutate(`90% CI` = paste0("(",round(`90% CI, lower`,0),"-",round(`90% CI, upper`,0),")")) %>%
+  select(-`90% CI, lower`, -`90% CI, upper`) %>%
   kable(booktabs = T,
         digits = 0,
-        align = "cccc",
+        align = "ccccc",
         format.args = list(big.mark = ",",
                            drop0trailing = T),
-        col.names = c("Species", "Scenario","Life-stage","Abundance"),
+        col.names = c("Species", "Scenario","Life-stage","Abundance", "Abundance SE", "90% CI"),
         caption = "Life-stage specific habitat capacity requirement estimates necessary to achieve given escapement recovery goals.") %>%
   kable_styling(full_width = F,
                 position = "center",
@@ -224,9 +403,9 @@ We define the available habitat carrying capacity as the maximal abundance or lo
 The QRF model is a novel approach to estimate the carrying capacity of wadable streams to support spawning and rearing Chinook salmon and steelhead. The approach involves fitting a QRF [@Meinshausen2006; @Cade2003] model to paired fish and habitat data across hundreds of sites in seven watersheds within the Columbia River Basin. Habitat data from the Colmbia Habitat Monitoring Program (CHaMP) were paired to juvenile fish and redd survey data to develop fish-habitat relationships [@See2021]. Importantly, the QRF model places no constraints on possible fish-habitat relationships; instead, relationships are estimated from the empirical data regardless of being positive, negative, linear, non-linear, etc. The QRF approach enables spatially continuous estimates of available habitat capacity given existing conditions at key life-stages for Chinook salmon and steelhead. Currently, available QRF models allow evaluation of three anadromous life stages: 1) spawning (redd) capacity, 2) juvenile (parr) summer rearing capacity, and 3) juvenile (presmolt) winter rearing capacity. Using the observed fish-habitat relationships, we can predict habitat capacity at any location with habitat data for all model covariates (e.g., at all CHaMP sites) (Table \@ref(tab:cov-tab)). The random forest model produces a distribution of predictions, one for each tree in the forest, and we chose the 90th quantile of that distribution as a proxy for carrying capacity. The QRF models used to estimate available habitat capacity, including data inputs, are described in further detail in Appendix B of @IdahoOSCTeam2019.
 
 ```{r cov-tab}
-load(here("analysis/data/derived_data/hab_cov_tbl.rda"))
+load(here("analysis/data/derived_data/QRF_cov_tbl.rda"))
 
-hab_cov_tbl %>%
+QRF_new_hab_cov_tbl %>%
   select(-Covariate) %>%
   kable(booktabs = T,
         align = "ccccccccl",
@@ -238,14 +417,14 @@ hab_cov_tbl %>%
 
 ### Extrapolation Model
 
-Although we have hundreds of sites across the Columbia River basin with detailed habitat data that were used to estimate capacity with the QRF model, this only covers a small percentage of the anadromous zone within each watershed. Additionally, many watersheds, including the Walla Walla, do not contain any sites.<!--I need to verify that statement, there may be a small number of CHaMP sites in the Walla Walla, but I believe, not--> Therefore, we extrapolated our capacity predictions to the areas between CHaMP sites using a [stream layer](https://www.nwfsc.noaa.gov/research/datatech/data/col_basin_hist_project/index.cfm) available from NOAA fisheries. This layer consists of a polyline shapefile divided into 200m reaches with various attributes associated with each reach. We refer to these as globally available attributes (GAAs) because they are associated with every reach across all watersheds in the Columbia River Basin. The shaprefile is derived from the [National Hydrography Dataset High Resolution](https://www.usgs.gov/core-science-systems/ngp/national-hydrography/nhdplus-high-resolution) (NHDPlus HR) dataset, which has a high resolution, 1:24,000.
+Although we have hundreds of sites across the Columbia River basin with detailed habitat data that were used to estimate capacity with the QRF model, this only covers a small percentage of the anadromous zone within each watershed. Therefore, we extrapolated our capacity predictions to the areas between CHaMP sites using a [stream layer](https://www.nwfsc.noaa.gov/research/datatech/data/col_basin_hist_project/index.cfm) available from NOAA fisheries. This layer consists of a polyline shapefile divided into 200m reaches with various attributes associated with each reach. We refer to these as globally available attributes (GAAs) because they are associated with every reach across all watersheds in the Columbia River Basin. The shapefile is derived from the [National Hydrography Dataset High Resolution](https://www.usgs.gov/core-science-systems/ngp/national-hydrography/nhdplus-high-resolution) (NHDPlus HR) dataset, which has a high resolution, 1:24,000.
 
 We estimated capacity in the North Fork Salmon watershed by quantifying the relationships between GAAs and QRF capacity predictions at all of the sites used the populate the QRF model. This was conducted using a second random forest model, with GAAs as covariates and QRF-predicted densities (linear or areal) as the response. The random forest approach allows for non-linear associations between capacity and GAAs, and constricts capacity predictions within the estimated range from the initial QRF model. Densities predictions for the North Fork Salmon watershed were calculated for 200m reach segments using the random forest model with GAA inputs, and reach capacity was calculated by multiplying the predicted fish/m by the length of the reach. Capacity for specific regions were then calculated by summing capacities for all reaches within the region.
 
 ```{r gaa-tbl}
-load(here("analysis/data/derived_data/extrap_gaa_tbl.rda"))
+load(here("analysis/data/derived_data/gaa_hab_dict.rda"))
 
-gaa_tbl %>%
+gaa_hab_dict %>%
   kable(booktabs = T,
         align = "cl",
         caption = "Habitat covariates and their descriptions used in the random forest extrapolation model.") %>%
@@ -260,7 +439,6 @@ gaa_tbl %>%
 ```{r calc-chnk-capacity}
 source(here("R/calc_watershed_cap.R"))
 
-# Chinook salmon, summer parr
 chnk_sum_cap = calc_watershed_cap(NF_huc_sf,
                                   NF_sum_sf,
                                   capacity_name = "chnk_per_m",
@@ -320,7 +498,9 @@ cap_totals = list(chnk_sum = chnk_sum_cap,
             filter(StreamName == "Total")
         }) %>%
   mutate(Species = str_split(type, "_", simplify = T)[ ,1],
-         LifeStage = str_split(type, "_", simplify = T)[ ,2]) %>%
+         LifeStage = str_split(type, "_", simplify = T)[ ,2],
+         tot_cap_90CI_L = tot_cap - tot_cap_se*1.65,
+         tot_cap_90CI_U = tot_cap + tot_cap_se*1.65) %>%
   mutate(Species = recode(Species,
                           "chnk" = "Chinook",
                           "sthd" = "Steelhead"),
@@ -334,14 +514,35 @@ cap_totals = list(chnk_sum = chnk_sum_cap,
          -StreamName,
          -type)
 
+
+#Estimating available capacity in terms of spawners
+availcap_spawners = tibble(Species = c(rep("Chinook",3), rep("Steelhead",3)),
+                            LifeStage = rep(c("Summer Juveniles","Winter Juveniles","Redds"),2),
+                            LifeStage_Cap = cap_totals$tot_cap,
+                           Pred_Spawners = NA)
+#chnk
+availcap_spawners$Pred_Spawners[1] = availcap_spawners$LifeStage_Cap[1]/(params$Value[1]*params$Value[2]*params$Value[3]*params$Value[4])
+                                                                         
+availcap_spawners$Pred_Spawners[2] = availcap_spawners$LifeStage_Cap[2]/(params$Value[1]*params$Value[2]*params$Value[3]*params$Value[4]*params$Value[5])
+
+availcap_spawners$Pred_Spawners[3] = availcap_spawners$LifeStage_Cap[3]/(params$Value[1]*params$Value[2])
+
+#sthd
+availcap_spawners$Pred_Spawners[4] = availcap_spawners$LifeStage_Cap[4]/(params$Value[7]*params$Value[8]*params$Value[9]*params$Value[10])
+                                                                         
+availcap_spawners$Pred_Spawners[5] = availcap_spawners$LifeStage_Cap[5]/(params$Value[7]*params$Value[8]*params$Value[9]*params$Value[10]*params$Value[11])
+
+availcap_spawners$Pred_Spawners[6] = availcap_spawners$LifeStage_Cap[6]/(params$Value[7]*params$Value[8])
+
 ```
 
-Estimates of total habitat capacity for the North Fork Salmon by species and life-stage are shown in Table \@ref(tab:cap-table). Estimates were made using the anadromous spatial domain defined in [StreamNet](https://www.streamnet.org/home/data-maps/gis-data-sets/) for Chinook salmon and steelhead. Capacity was extrapolated within these domains for `r unique(cap_totals$n_rchs[cap_totals$Species == "Chinook"])` reaches totaling `r round(unique(cap_totals$tot_length[cap_totals$Species == "Chinook"]) / 1000)` km in length for Chinook salmon and `r prettyNum(unique(cap_totals$n_rchs[cap_totals$Species == "Steelhead"]), big.mark = ",")` reaches totaling `r round(unique(cap_totals$tot_length[cap_totals$Species == "Steelhead"]) / 1000)` km in length for steelhead. Different spatial domains could be used for both Chinook salmon and steelhead if deemed appropriate. Capacity estimates for individual streams by species and life stage are provided in [Supplemental Tables and Figures](#supplemental-tables-and-figures).
+Estimates of total habitat capacity for the North Fork Salmon by species and life-stage are shown in Table \@ref(tab:cap-table). Estimates were made using the anadromous spatial domain defined in [StreamNet](https://www.streamnet.org/home/data-maps/gis-data-sets/) for Chinook salmon and steelhead that included minor modifications based on expert knowledge from regional biologists (personal comm. Beulow). Capacity was extrapolated within these domains for `r unique(cap_totals$n_rchs[cap_totals$Species == "Chinook"])` reaches totaling `r round(unique(cap_totals$tot_length[cap_totals$Species == "Chinook"]) / 1000)` km in length for Chinook salmon and `r prettyNum(unique(cap_totals$n_rchs[cap_totals$Species == "Steelhead"]), big.mark = ",")` reaches totaling `r round(unique(cap_totals$tot_length[cap_totals$Species == "Steelhead"]) / 1000)` km in length for steelhead. Different spatial domains could be used for both Chinook salmon and steelhead if deemed appropriate. Capacity estimates for individual streams by species and life stage are provided in [Supplemental Tables and Figures](#supplemental-tables-and-figures).
 
 ```{r cap-table}
 cap_totals %>%
   mutate(avg_cap_per_m = tot_cap / tot_length) %>%
-  mutate(tot_length_km = tot_length / 1000) %>%
+  mutate(tot_length_km = tot_length / 1000,
+         `90% CI` = paste0("(", round(tot_cap_90CI_L, 0), "-", round(tot_cap_90CI_U, 0),")")) %>%
   rename(`n Reaches` = n_rchs,
          `Stream Length (km)` = tot_length_km,
          Capacity = tot_cap,
@@ -353,12 +554,13 @@ cap_totals %>%
          `Stream Length (km)`,
          Capacity,
          SE,
+         `90% CI`,
          `Avg. Capacity / m`) %>%
   kable(booktabs = T,
-        digits = c(0, 0, 1, 0, 0, 0, 3),
-        align = "ccccccc",
+        digits = c(0, 0, 1, 0, 0, 0, 0, 3),
+        align = "cccccccc",
         format.args = list(big.mark = ","),
-        col.names = c("Species","Life-stage","Reaches","Stream Length (km)", "Capacity","SE","Avg. Capacity/m"),
+        col.names = c("Species","Life-stage","Reaches","Stream Length (km)", "Capacity","SE", "Capacity 90% CI","Avg. Capacity/m"),
         caption = "Estimates of current available watershed capacity by species and life-stage.") %>%
   kable_styling(full_width = F,
                 position = "center",
@@ -366,7 +568,7 @@ cap_totals %>%
 
 ```
 
-Maps depicting capacity extrapolations are useful to visualize low- versus high-capacity areas and can inform prioritization efforts. Data used to generate these maps have been exported in geopackage file format and are available in the [UWW.plan GitHub repository](https://github.com/Mount-Hood-Environmental/UWW.plan). Chinook salmon and steelhead capacity extrapolations are shown in Figures \@ref(fig:chnk-maps) and \@ref(fig:sthd-maps), respectively.
+Maps depicting capacity extrapolations are useful to visualize low- versus high-capacity areas and can inform prioritization efforts. Data used to generate these maps have been exported in geopackage file format and are available in the [NF_assessment GitHub repository](https://github.com/Mount-Hood-Environmental/NF_assess). Chinook salmon and steelhead capacity extrapolations are shown in Figures \@ref(fig:chnk-maps) and \@ref(fig:sthd-maps), respectively.
 
 ```{r create-chnk-maps}
 # pick a background river color
@@ -535,16 +737,18 @@ rec_goals %>%
   left_join(cap_totals %>%
               select(-n_rchs,
                      -tot_length)) %>%
+  filter(LifeStage != "Smolts") %>%
   mutate(Deficit = Abundance - tot_cap,
          `Relative Deficit` = Deficit / tot_cap) %>%
   rename(`Required Capacity` = Abundance,
          `Available Capacity` = tot_cap,
          `Capacity SE` = tot_cap_se) %>%
+  select(-tot_cap_90CI_U, -tot_cap_90CI_L, -`90% CI, lower`, -`90% CI, upper`) %>%
   kable(booktabs = T,
-        digits = c(0,0,0,0,0,0,0,2),
-        align = "cccccccc",
+        digits = c(0,0,0,0,0,0,0,0,2),
+        align = "cccccccccccc",
         format.args = list(big.mark = ","),
-        col.names = c("Species","Scenario","Life-stage","Required Capacity","Available Capacity","Capacity SE","Deficit","Relative Deficit"),
+        col.names = c("Species","Scenario","Life-stage","Required Capacity", "Required Capacity SE","Available Capacity","Available Capacity SE","Deficit","Relative Deficit"),
         caption = "Capacity deficits and relative deficits based on recovery goals.") %>%
   kable_styling(full_width = F,
                 position = "center",
@@ -554,7 +758,7 @@ rec_goals %>%
 
 Comparisons of available and required capacity by life-stage are shown in Figures \@ref(fig:chnk-def-fig) and \@ref(fig:sthd-def-fig).
 
-```{r chnk-def-fig, fig.cap = "Estimated available capacity given current habitat conditions for Chinook salmon at three life-stages in the North Fork Salmon watershed. Available capacity was calculated using a quantile random forest (QRF) approach, and required capacity was calculated using a Generalized Capacity Model with adult escapement goals."}
+```{r chnk-def-fig, fig.cap = "Estimated available capacity given current habitat conditions for Chinook salmon at three life-stages in the North Fork Salmon watershed. Available capacity was calculated using a quantile random forest (QRF) approach, and required capacity was calculated using a Generalized Capacity Model with adult escapement goals. Error bars represent 90% confidence intervals."}
 chnk_def_p = rec_goals %>%
   select(-Scenario) %>%
   filter(Species == "Chinook",
@@ -570,8 +774,10 @@ chnk_def_p = rec_goals %>%
          se = tot_cap_se) %>%
   pivot_longer(cols = c("Required",
                         "Available")) %>%
-  mutate(se = ifelse(name == "Required", NA, se)) %>%
-  select(LifeStage, name, value, se) %>%
+  mutate(std.error = ifelse(name == "Required", SE, se),
+         cap_90CI_L = ifelse(name == "Required", `90% CI, lower`, tot_cap_90CI_L),
+         cap_90CI_U = ifelse(name == "Required", `90% CI, upper`, tot_cap_90CI_U)) %>%
+  select(LifeStage, name, value, std.error, cap_90CI_L, cap_90CI_U) %>%
   ggplot() +
   geom_bar(aes(x = name,
                y = value,
@@ -588,9 +794,9 @@ chnk_def_p = rec_goals %>%
              strip.position = "left",
              labeller = labeller(LifeStage = label_wrap_gen(width = 10))) +
   geom_errorbar(aes(x = name,
-                    ymin = value - 1.96 * se,
-                    ymax = value + 1.96 * se),
-                width = 0,
+                    ymin = cap_90CI_L,
+                    ymax = cap_90CI_U),
+                width = 0.3,
                 size = 0.5) +
   scale_y_continuous(labels = scales::comma,
                      expand = c(0,0)) +
@@ -612,7 +818,66 @@ chnk_def_p
 
 ```
 
-```{r sthd-def-fig, fig.cap = "Estimated available capacity given current habitat conditions for steelhead at three life-stages in the North Fork Salmon watershed. Available capacity was calculated using a quantile random forest (QRF) approach, and required capacity was calculated using a Generalized Capacity Model with adult escapement goals."}
+```{r chnk-dens-req-fig, fig.cap = "Comparison of model predictions for available and required habitat capacities"}
+ chnk_def_line = rec_goals %>%
+  select(-Scenario) %>%
+  filter(Species == "Chinook",
+         LifeStage %in% c("Redds",
+                          "Summer Juveniles",
+                          "Winter Juveniles")) %>%
+  left_join(cap_totals %>%
+              select(-n_rchs,
+                     -tot_length)) %>%
+  select(!Species) %>%
+  rename(Required = Abundance,
+         Available = tot_cap,
+         se = tot_cap_se) %>%
+  pivot_longer(cols = c("Required",
+                        "Available")) %>%
+  mutate(std.error = ifelse(name == "Required", SE, se),
+         cap_90CI_L = ifelse(name == "Required", `90% CI, lower`, tot_cap_90CI_L),
+         cap_90CI_U = ifelse(name == "Required", `90% CI, upper`, tot_cap_90CI_U)) %>%
+  select(LifeStage, name, value, std.error, cap_90CI_L, cap_90CI_U) %>%
+  ggplot() +
+  geom_point(aes(x = name,
+               y = value),
+           color = "black",
+           stat = "identity") +
+  scale_x_discrete(limits = rev) +
+  scale_fill_manual(name = "Capacity",
+                    values = c("gray30", "forestgreen")) +
+  coord_flip() +
+  facet_wrap(~ LifeStage,
+             scales = "free",
+             ncol = 1,
+             strip.position = "left",
+             labeller = labeller(LifeStage = label_wrap_gen(width = 10))) +
+  geom_errorbar(aes(x = name,
+                    ymin = cap_90CI_L,
+                    ymax = cap_90CI_U),
+                width = 0,
+                size = 0.2) +
+  scale_y_continuous(labels = scales::comma,
+                     expand = c(0,0)) +
+  labs(title = "Chinook salmon") +
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        #axis.text.y = element_blank(),
+        #axis.ticks.y = element_blank(),
+        axis.text.x = element_text(size = 8,
+                                   color = "black"),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 10),
+        strip.text.y = element_text(size = 10),
+        plot.title = element_text(size = 12,
+                                  face = "bold"),
+        legend.position = "right")
+
+
+
+```
+
+```{r sthd-def-fig, fig.cap = "Estimated available capacity given current habitat conditions for steelhead at three life-stages in the North Fork Salmon watershed. Available capacity was calculated using a quantile random forest (QRF) approach, and required capacity was calculated using a Generalized Capacity Model with adult escapement goals. Error bars represent 90% confidence intervals."}
 sthd_def_p = rec_goals %>%
   select(-Scenario) %>%
   filter(Species == "Steelhead",
@@ -628,8 +893,10 @@ sthd_def_p = rec_goals %>%
          se = tot_cap_se) %>%
   pivot_longer(cols = c("Required",
                         "Available")) %>%
-  mutate(se = ifelse(name == "Required", NA, se)) %>%
-  select(LifeStage, name, value, se) %>%
+  mutate(std.error = ifelse(name == "Required", SE, se),
+         cap_90CI_L = ifelse(name == "Required", `90% CI, lower`, tot_cap_90CI_L),
+         cap_90CI_U = ifelse(name == "Required", `90% CI, upper`, tot_cap_90CI_U)) %>%
+  select(LifeStage, name, value, std.error, cap_90CI_L, cap_90CI_U) %>%
   ggplot() +
   geom_bar(aes(x = name,
                y = value,
@@ -646,10 +913,10 @@ sthd_def_p = rec_goals %>%
              strip.position = "left",
              labeller = labeller(LifeStage = label_wrap_gen(width = 10))) +
   geom_errorbar(aes(x = name,
-                    ymin = value - 1.96 * se,
-                    ymax = value + 1.96 * se),
-                width = 0,
-                size = 0.8) +
+                    ymin = cap_90CI_L,
+                    ymax = cap_90CI_U),
+                width = 0.3,
+                size = 0.5) +
   scale_y_continuous(labels = scales::comma,
                      expand = c(0,0)) +
   labs(title = "Steelhead") +
@@ -670,19 +937,26 @@ sthd_def_p
 
 ```
 
+Available capacity deficits can also be evaluated in terms of spawning escapement abundance using the GCM (Table \@ref(tab:cap-spawnconv-tbl)). For example, predicted redd capacity is divided by the estimated number of redds per female and the female ratio to provide an estimate of the spawner abundance supported given the particular life stage.
+
+```{r cap-spawnconv-tbl}
+availcap_spawners %>%
+  #rename(`Life Stage` = LifeStage,
+  #       `Available Capacity` = LifeStage_Cap,
+  #       `Predicted Spawners` = Pred_Spawners) %>%
+  kable(booktabs = T,
+        digits = c(0,0,0,0),
+        align = "cccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Species","Life-stage","Available Capacity","Predicted Spawners"),
+        caption = "Estimated capacity by life-stage and the predicted abundance of spawners supported.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
 ## Further Considerations
-
--   The current required capacity estimates from the Generalized Capacity Model are considered tentative for the following reasons:
-
-    -   We are currently exploring options to add appropriate uncertainty to parameters used in the Generalized Capacity Model which would result in distributions for corresponding required capacity estimates. Required capacity distributions may be added to a future draft.
-
--   Similarly, current available habitat capacity estimates from the QRF and extrapolation models are considered (very) tentative:
-
-    -   Improvements to the QRF model are scheduled for spring/summer 2022, including modifications to the list of QRF covariates (Table \@ref(tab:cov-tab)) used in each. Potential changes to QRF model covariates will accommodate: 1) using metrics collected by drone-supported stream habitat monitoring protocols currently in place [e.g., DASH, @Carmichael2019], 2) using metrics that are useful or meaningful for project design or target conditions, and/or 3) using covariates with predictive power for estimating capacity.
-
-    -   The extrapolation model uses an anadromous spatial domain defined by [StreamNet](https://www.streamnet.org/home/data-maps/gis-data-sets/). However, those domains are provided by StreamNet partners, and to the best our knowledge, can be informed by disparate datasets and/or be driven by differing research questions (e.g., defining observed versus potential available habitat). If better information is available to define a spatial distribution in the Upper Walla Walla watershed, those spatial domains can be updated. Increasing or decreasing the modeled spatial domain would likely result in increased or decreased capacity estimates, respectively.
-
-    -   Additional GAA parameters may become available for capacity extrapolations in 2022, and if so, we would consider adding those to our spatially continuous linear network. We are also interested in evaluating sensitivity of the extrapolation model to various covariate combinations.
 
 -   The available capacity tables in the [Supplemental Tables and Figures](#supplemental-tables-and-figures) section, which provide estimates by stream, contain some reaches where the stream name is `NA`. If necessary, we could QC those stream reaches and identify whether they fall on a named stream.
 

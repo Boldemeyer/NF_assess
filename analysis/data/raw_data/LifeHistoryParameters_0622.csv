@@ -1,0 +1,13 @@
+Species,Parameter,Value,SD,Min,Max,Source
+Chinook,Female Ratio,0.432,0.04,0.324,0.557,Kinzer et al 2020
+Chinook,Redds/Female,0.772,0.264,0.52,2.45,"Upper Salmon, Pahsimeroi, and Lemhi weir and RST monitoring data"
+Chinook,Fecundity,3726,655.8,2857,5191,Gallinat and Kiefel 2020
+Chinook,Egg:Parr,0.1,NA,NA,NA,Gallinat and Kiefel 2020
+Chinook,Parr:Presmolt,0.405,NA,NA,NA,Lemhi River Empirical Data
+Chinook,Egg:Smolt,0.047,0.028,0,0.102,Gallinat and Kiefel 2020
+Steelhead,Female Ratio,0.662,0.03,0.542,0.751,Kinzer et al 2020
+Steelhead,Redds/Female,0.892,0.293,0.37,1.52,Jonasson et al 2016
+Steelhead,Fecundity,4926,459,4688,5987,"IDFG, Personal Communication"
+Steelhead,Egg:Parr,0.134,NA,NA,NA,McHugh et al 2017
+Steelhead,Parr:Presmolt,0.359,NA,NA,NA,McHugh et al 2017
+Steelhead,Egg:Smolt,0.0083,0.0045,0.0044,0.0158,White et al 2007
