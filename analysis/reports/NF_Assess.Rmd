@@ -958,7 +958,7 @@ availcap_spawners %>%
 
 ## Watershed Comparison
 
-Below are habitat carrying capacity estimates for the QRF and RF extrapolations models for Chinook salmon and steelhead during juvenile summer, juvenile winter, and redd life stages for the North Fork Salmon River watershed, as well as seven other watersheds within the Upper Salmon River Basin. Species spatial domains for the seven watersheds were defined in StreamNet (<https://www.streamnet.org/home/data-maps/gis-data-sets/>) extents and *do not* include expert knowledge or input from regional biologists. Due to this fact, the summaries and statistic below may change slightly depending on adjustments to species domains with input from regional biologists.
+Below are habitat carrying capacity estimates for Chinook salmon and steelhead during juvenile summer, juvenile winter, and redd life stages for the North Fork Salmon River watershed, as well as seven other watersheds within the Upper Salmon River Basin. Species spatial domains for the seven watersheds were defined by StreamNet (<https://www.streamnet.org/home/data-maps/gis-data-sets/>) extents and *do not* include expert knowledge or input from regional biologists. Due to this fact, the summaries and statistic below may change slightly depending on adjustments to species domains with input from regional biologists.
 
 ```{r load-watershed-comp-data, results = "hide"}
 
@@ -1088,7 +1088,7 @@ cap_by_ws = function(x, speciescode){
 
 ```
 
-```{r calc-chnk-capacity}
+```{r calc-chnk-capacity-ws}
 
 # Chinook salmon, summer parr
 chnk_sum_cap_new = cap_by_ws(US_sum_sf_new_extrap, "chnk") %>%
@@ -1104,7 +1104,7 @@ chnk_redd_cap_new = cap_by_ws(US_redds_sf_new_extrap, "chnk") %>%
 
 ```
 
-```{r calc-sthd-capacity}
+```{r calc-sthd-capacity-ws}
 
 # steelhead salmon, summer parr
 sthd_sum_cap_new = cap_by_ws(US_sum_sf_new_extrap, "sthd") %>%
@@ -1191,7 +1191,7 @@ chnk_US_redd_map = US_redds_sf_new_extrap %>%
        color = expression(Redds / km))
 ```
 
-```{r create-sthd-maps}
+```{r create-sthd-maps-us}
 # steelhead summer juveniles
 sthd_US_sum_map = US_sum_sf_new_extrap %>%
   ggplot() +
@@ -1261,14 +1261,21 @@ sthd_US_redd_map = US_redds_sf_new_extrap %>%
 
 ```
 
-```{r chnk-maps, fig.cap = "Extrapolations of habitat capacity for Chinook salmon, by life-stage, for eight watersheds within the Upper Salmon River Basin."}
-ggarrange(chnk_US_sum_map,
-          chnk_US_win_map,
-          chnk_US_redd_map)
+```{r chnk-maps-us-sum, fig.cap = "Extrapolations of habitat carrying capacity for juvenile Chinook salmon summer rearing for eight watersheds within the Upper Salmon River Basin."}
+chnk_US_sum_map
 
 ```
 
-```{r chnk-cap-summarytbl}
+```{r chnk-maps-us-win, fig.cap = "Extrapolations of habitat carrying capacity for juvenile Chinook salmon winter rearing for eight watersheds within the Upper Salmon River Basin."}
+chnk_US_win_map
+```
+
+```{r chnk-maps-us-redd, fig.cap = "Extrapolations of habitat carrying capacity for Chinook redds for eight watersheds within the Upper Salmon River Basin."}
+chnk_US_redd_map
+
+```
+
+```{r chnk-cap-summarytbl-us}
 bind_rows(chnk_sum_cap_new,
           chnk_win_cap_new,
           chnk_redd_cap_new) %>%
@@ -1313,14 +1320,20 @@ bind_rows(chnk_sum_cap_new,
 
 ### Steelhead
 
-```{r sthd-maps, fig.cap = "Extrapolations of habitat capacity for steelhead, by life-stage, for eight watersheds within the Upper Salmon River Basin."}
-ggarrange(sthd_US_sum_map,
-          sthd_US_win_map,
-          sthd_US_redd_map)
+```{r sthd-maps-us-sum, fig.cap = "Extrapolations of habitat carrying capacity for juvenile steelhead summer rearing for eight watersheds within the Upper Salmon River Basin."}
+sthd_US_sum_map
+```
+
+```{r sthd-maps-us-win, fig.cap = "Extrapolations of habitat carrying capacity for juvenile steelhead winter rearing for eight watersheds within the Upper Salmon River Basin."}
+sthd_US_win_map
+```
+
+```{r sthd-maps-us-redd, fig.cap = "Extrapolations of habitat carrying capacity for steelhead redds for eight watersheds within the Upper Salmon River Basin."}
+sthd_US_redd_map
 
 ```
 
-```{r sthd-cap-summarytbl}
+```{r sthd-cap-summarytbl-us}
 bind_rows(sthd_sum_cap_new,
           sthd_win_cap_new,
           sthd_redd_cap_new) %>%
@@ -1362,25 +1375,320 @@ bind_rows(sthd_sum_cap_new,
                 bootstrap_options = c("striped", "condensed"))
 ```
 
-
 # Reach Comparison
 
+*\*\* PULLED FROM SCOPE. NEED TO ADD AN INTRO \*\**
 
+Currently, Drone Assisted Stream Habitat (DASH) data are available for 11 sites and approximately 255 channel units in the NFSR, covering approximately 6 km in length, mostly in the mainstem. Comparisons of fish habitat capacity, both within the NFSR and to watersheds elsewhere where similar data are available, and the fish-habitat relationships derived from those evaluation, are described existing fish habitat conditions, and further, target conditions to relieve capacity limitations. This reach-scale fish habitat assessment will be supported by a literature review of preferred habitat conditions for Chinook salmon and steelhead and fish-habitat relationships derived from available relic datasets. Observations will include: 􀁸 Predictions of capacity at habitat reaches (each \~200m in length) in the NFSR where DASH habitat data are available. 􀁸 Comparisons of relative capacity within the NFSR and to watersheds elsewhere where DASH habitat data are available. Descriptions of fish-habitat relationships derived from capacity evaluations. 􀁸 Descriptions of target habitat condition to relieve habitat capacity limitations, supported by a literature review and available relic fish-habitat relationships.
 
+```{r Dash-compare-chnk, out.width = "100%", fig.cap = "Violin plots showing the distribution of Chinook capacity estimates for 200 m reaches for watersheds in the Upper Salmon River Basin (or adjacent basins) where Drone Assisted Stream Habitat (DASH) surveys have been conducted. NOTE: There were a variety of motiviations for surveying  habitat sites within these watersheds (reference reach assessment, pre- post- restoration monitoring, etc.). The violon plots should not be interpreted as representative habitat for the entire watershed, and rather an over view of the relative habitat quality that was surveyed within the watershed. "}
 
-## 
+# NOTE: These figures were created in the Reference Reach Assessment - CapacityData_prep.R script. 
+knitr::include_graphics("../figures/Wtsd_density_violinplot_chnk_NF_assess.png")
 
-# Stream Temperature Assessment
-
-## Approach
-
-NF Salmon
-
-```{=html}
-<!-- 
-Finally, a NorWeST summer stream temperature model was used to describe changes in predicted capacity for target species given various changing climate scenarios [@Isaak2012; @Peterson2013; @Isaak2017]
--->
 ```
+
+```{r Dash-compare-sthd, out.width = "100%", fig.cap = "Violin plots showing the distribution of steelhead capacity estimates for 200 m reaches for watersheds in the Upper Salmon River Basin (or adjacent basins) where Drone Assisted Stream Habitat (DASH) surveys have been conducted. NOTE: There were a variety of motiviations for surveying  habitat sites within these watersheds (reference reach assessment, pre- post- restoration monitoring, etc.). The violon plots should not be interpreted as representative habitat for the entire watershed, and rather an over view of the relative habitat quality that was surveyed within the watershed."}
+
+# NOTE: These figures were created in the Reference Reach Assessment - CapacityData_prep.R script. 
+knitr::include_graphics("../figures/Wtsd_density_violinplot_sthd_NF_assess.png")
+
+```
+
+```{r Dash-hab-chnk-sum, out.width = "100%", fig.cap = "Violin plots showing the distribution of habitat metrics for reaches with the highest juvenile Chinook summer carrying capacity (upper 10% quartile),lowest juvenile Chinook summer carrying capacity (lower 10% quartile), and juvenile Chinook summer carrying capacity for the North Fork Salmon watershed. Data included in the comparison were collected using DASH surveys in the Upper Salmon River basin, Upper Middle Fork watershed, Upper Secesh watershed, and East Fork Big Lost watershed. "}
+
+# NOTE: These figures were created in the Reference Reach Assessment - HabitatData_prep.R script. 
+knitr::include_graphics("../figures/DASH_10UL_chnk_NF_assess_juv_summer.png")
+
+```
+
+```{r Dash-hab-sthd-sum, out.width = "100%", fig.cap = "Violin plots showing the distribution of habitat metrics for reaches with the highest juvenile steelhead summer carrying capacity (upper 10% quartile),lowest juvenile steelhead summer carrying capacity (lower 10% quartile), and juvenile steelhead summer carrying capacity for theNorth Fork Salmon watershed. Data included in the comparison were collected using DASH surveys in the Upper Salmon River basin, Upper Middle Fork watershed, Upper Secesh watershed, and East Fork Big Lost watershed."}
+
+# NOTE: These figures were created in the Reference Reach Assessment - HabitatData_prep.R script. 
+knitr::include_graphics("../figures/DASH_10UL_sthd_NF_assess_juv_summer.png")
+
+```
+
+```{r Dash-hab-chnk-win, out.width = "100%", fig.cap = "Violin plots showing the distribution of habitat metrics for reaches with the highest juvenile Chinook winter carrying capacity (upper 10% quartile),lowest juvenile Chinook winter carrying capacity (lower 10% quartile), and juvenile Chinook winter carrying capacity for the North Fork Salmon watershed. Data included in the comparison were collected using DASH surveys in the Upper Salmon River basin, Upper Middle Fork watershed, Upper Secesh watershed, and East Fork Big Lost watershed."}
+
+# NOTE: These figures were created in the Reference Reach Assessment - HabitatData_prep.R script. 
+knitr::include_graphics("../figures/DASH_10UL_chnk_NF_assess_juv_winter.png")
+
+```
+
+```{r Dash-hab-sthd-win, out.width = "100%", fig.cap = "Violin plots showing the distribution of habitat metrics for reaches with the highest juvenile steelhead winter carrying capacity (upper 10% quartile),lowest juvenile steelhead winter carrying capacity (lower 10% quartile), and juvenile steelhead winter carrying capacity for the North Fork Salmon watershed. Data included in the comparison were collected using DASH surveys in the Upper Salmon River basin, Upper Middle Fork watershed, Upper Secesh watershed, and East Fork Big Lost watershed."}
+
+# NOTE: These figures were created in the Reference Reach Assessment - HabitatData_prep.R script. 
+knitr::include_graphics("../figures/DASH_10UL_sthd_NF_assess_juv_winter.png")
+
+```
+
+```{r Dash-hab-chnk-redds, out.width = "100%", fig.cap = "Violin plots showing the distribution of habitat metrics for reaches with the highest Chinook redd carrying capacity (upper 10% quartile),lowest Chinook redd carrying capacity (lower 10% quartile), and Chinook redd carrying capacity for the North Fork Salmon watershed. Data included in the comparison were collected using DASH surveys in the Upper Salmon River basin, Upper Middle Fork watershed, Upper Secesh watershed, and East Fork Big Lost watershed."}
+
+# NOTE: These figures were created in the Reference Reach Assessment - HabitatData_prep.R script. 
+knitr::include_graphics("../figures/DASH_10UL_chnk_NF_assess_redds.png")
+
+```
+
+```{r Dash-hab-sthd-redds, out.width = "100%", fig.cap = "Violin plots showing the distribution of habitat metrics for reaches with the highest steelhead redd carrying capacity (upper 10% quartile),lowest steelhead redd carrying capacity (lower 10% quartile), and steelhead redd carrying capacity for the North Fork Salmon watershed. Data included in the comparison were collected using DASH surveys in the Upper Salmon River basin, Upper Middle Fork watershed, Upper Secesh watershed, and East Fork Big Lost watershed."}
+
+# NOTE: These figures were created in the Reference Reach Assessment - HabitatData_prep.R script. 
+knitr::include_graphics("../figures/DASH_10UL_sthd_NF_assess_redds.png")
+
+```
+
+# Summer Stream Temperature Assessment
+
+The primary objectives of the summer stream temperature assessment is to:
+
+-   Summarize historic composite scenario summer stream temperatures for the North Fork Watershed using NorWest stream temperature data (CITE)
+
+-   Compare predictions of summer stream temperatures in the North Fork Watershed for 2040 and 2080 climate scenarios.
+
+-   Run a hypothetical scenario were restoration efforts over the next \~60 years decrease summer stream temperatures by -1^o^ C.
+
+-   Summarize temperature suitability based solely on species-specific temperature models for the North Fork Watershed.
+
+## Stream Temperature Data
+
+NorWest August stream temperature estimates for historic composite scenario (2002-2011), projected 2040 stream temperatures, and projected 2080 stream temperatures summaries.
+
+-   S2_02_11 Historical composite scenario representing 10 year average August mean stream temperatures for 2002-2011
+
+-   S30_2040D Future August mean stream temperature scenario based on global climate model ensemble average projected changes in August air temperature and stream discharge for the A1B warming trajectory in the 2040s (2030-2059). Future stream deltas within a NorWeST unit account for differential sensitivity among streams so that cold streams warm less than warm streams.
+
+-   S32_2080D Future August mean stream temperature scenario based on global climate model ensemble average projected changes in August air temperature and stream discharge for the A1B warming trajectory in the 2080s (2070-2099). Future stream deltas within a NorWeST unit account for differential sensitivity among streams so that cold streams warm less than warm streams.
+
+## Fish Temperature Thresholds
+
+The focal species for the summer stream temperature suitability models are:
+
+-   Spring-run Chinook salmon (*Oncorhynchus tshawytscha*; hereafter Chinook salmon)
+    -   thresholds - Carter (2005) - spawning and summer parr
+-   Middle Columbia River summer steelhead (*O. mykiss*; hereafter steelhead; ESA-listed threatened)
+    -   thresholds - Carter (2005) - summer parr
+
+# Results
+
+## Stream Temperature Results
+
+```{r current_temp_map}
+
+river_color = "lightskyblue1"
+
+# Current temp map
+temp_map_cur = NF_rch_sf %>%
+  ggplot() +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_rch_sf %>%
+            mutate(S2_02_11 = replace(S2_02_11, S2_02_11 == -9999.00, NA)),
+          aes(color = S2_02_11),
+          size = 1) +
+  scale_color_viridis_c(direction = 1, limits = c(5,17)) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "2002-2011 historical composite scenario",
+       color = expression("Temperature ("^o*"C)"))
+
+# 2040 temp map
+temp_map_2040 = NF_rch_sf %>%
+  ggplot() +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_rch_sf %>%
+            mutate(S30_2040D = replace(S30_2040D, S30_2040D == -9999.00, NA)),
+          aes(color = S30_2040D),
+          size = 1) +
+  scale_color_viridis_c(direction = 1, limits = c(5,17)) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "2040 future scenario",
+       color = expression("Temperature ("^o*"C)"))
+
+# 2080 temp map
+temp_map_2080 = NF_rch_sf %>%
+  ggplot() +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_rch_sf %>%
+            mutate(S32_2080D = replace(S32_2080D, S32_2080D == -9999.00, NA)),
+          aes(color = S32_2080D),
+          size = 1) +
+  scale_color_viridis_c(direction = 1, limits = c(5,17)) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "2080 future scenario",
+       color = expression("Temperature ("^o*"C)"))
+
+# -1C results
+temp_map_1C = NF_rch_sf %>%
+  ggplot() +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_rch_sf %>%
+            mutate(S2_02_11 = replace(S2_02_11, S2_02_11 == -9999.00, NA)),
+          aes(color = (S2_02_11-1)),
+          size = 1) +
+  scale_color_viridis_c(direction = 1, limits = c(5,17)) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = expression("Hypothetical restoration effect on \n historic composite scenario (-1"^o*"C)"),
+       color = expression("Temperature ("^o*"C)"))
+
+
+# 2040 comparison
+temp_rel_map_2040 = NF_rch_sf %>%
+  ggplot() +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_rch_sf %>%
+            mutate(S30_2040D = replace(S30_2040D, S30_2040D == -9999.00, NA),
+                   S2_02_11 = replace(S2_02_11, S2_02_11 == -9999.00, NA),
+                   temp_dif = S30_2040D - S2_02_11),
+          aes(color = temp_dif),
+          size = 1) +
+  scale_color_viridis_c(direction = 1,limits = c(-1,2.5)) +
+#scale_fill_gradientn(limits = c(1,3)) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "2040 future scenario",
+       color = expression("Temperature ("^o*"C)"))
+
+# 2080 comparison
+temp_rel_map_2080 = NF_rch_sf %>%
+  ggplot() +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_rch_sf %>%
+            mutate(S32_2080D = replace(S32_2080D, S32_2080D == -9999.00, NA),
+                   S2_02_11 = replace(S2_02_11, S2_02_11 == -9999.00, NA),
+                   temp_dif = S32_2080D - S2_02_11),
+          aes(color = temp_dif),
+          size = 1) +
+  scale_color_viridis_c(direction = 1,limits = c(-1,2.5)) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "2080 future scenario",
+       color = expression("Temperature ("^o*"C)"))
+
+# -1C results
+temp_rel_map_1C = NF_rch_sf %>%
+  ggplot() +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_rch_sf %>%
+            mutate(S2_02_11 = replace(S2_02_11, S2_02_11 == -9999.00, NA)),
+          aes(color = (S2_02_11-1)),
+          size = 1) +
+  scale_color_viridis_c(direction = 1,limits = c(-1,2.5)) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = expression("Hypothetical restoration effect on \n historic composite scenario (-1"^o*"C)"),
+       color = expression("Temperature ("^o*"C)"))
+
+```
+
+```{r current-temp-maps, fig.cap = "NorWeST average August mean stream temperatures for the North Fork Salmon watershed."}
+
+temp_map_cur
+
+```
+
+```{r 2040-temp-maps, fig.cap = "NorWeST average August mean stream temperatures for the North Fork Salmon watershed."}
+
+temp_map_2040
+
+```
+
+```{r 2080-temp-maps, fig.cap = "NorWeST average August mean stream temperatures for the North Fork Salmon watershed."}
+
+temp_map_2080
+
+```
+
+```{r 1C-temp-maps, fig.cap = "NorWeST average August mean stream temperatures for the North Fork Salmon watershed."}
+temp_map_1C
+
+```
+
+```{r 2040-temp-comparison-maps, fig.cap = "Difference in projected NorWeST average August mean stream temperatures for 2040relative to the 2002-2011 historical composite scanerio for the North Fork Salmon watershed."}
+
+ggarrange(temp_rel_map_2040)
+
+```
+
+```{r 2080-temp-comparison-maps, fig.cap = "Difference in projected NorWeST average August mean stream temperatures for 2080 relative to the 2002-2011 historical composite scanerio for the North Fork Salmon watershed."}
+
+ggarrange(temp_rel_map_2080)
+
+```
+
+```{r 1C-temp-comparison-maps, eval=FALSE, fig.cap = "Difference in projected NorWeST average August mean stream temperatures for - 1oC scenario relative to the 2002-2011 historical composite scanerio for the North Fork Salmon watershed."}
+
+ggarrange(temp_rel_map_1C)
+
+```
+
+## Fish Temperature Suitability Results
+
+-   Chinook map, summary table, violin plots
+
+    -   redds and summer parr
+
+-   Steelhead map, summary table, violin plots
+
+    -   summer parr
+
 # Limited Species and Life-Stages
 
 What are the limited species and life-stages and why? Include results from a literature review, the habitat capacity assessment, and the stream temperature assessment.
