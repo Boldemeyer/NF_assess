@@ -1,0 +1,1105 @@
+---
+title: "North Fork Salmon River - Fish Habitat Assessment"
+author:
+  - Bryce N. Oldemeyer:
+      email: Bryce.Oldemeyer@mounthoodenvironmental.com
+      institute: [mhe_challis]
+      correspondence: true
+  - Mark Roes:
+      email: mark.roes@mthoodenvironmental.com
+      institute: [mhe_sandy]
+      correspondence: false
+  - Tulley Mackey:
+      email: tulley.mackey@mthoodenvironmental.com
+      institute: [mhe_salmon]
+      correspondence: false
+  - Michael W. Ackerman:
+      email: mike.ackerman@mthoodenvironmental.com
+      institute: [mhe_mccall]
+      correspondence: false
+institute:
+  - mhe_challis: Mount Hood Environmental, PO Box 1303, Challis, Idaho, 83226, USA
+  - mhe_sandy: Mount Hood Environmental, 39085 Pioneer Boulevard \#100 Mezzanine, Sandy, Oregon, 97055, USA
+  - mhe_salmon: Mount Hood Environmental, 1009 South Daisy Street, Salmon, Idaho, 83467, USA
+  - mhe_mccall: Mount Hood Environmental, PO Box 4282, McCall, Idaho, 83638, USA
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  bookdown::html_document2:
+    theme: yeti
+    toc: yes
+    toc_depth: 2
+    toc_float:
+      collapsed: yes
+      smooth_scroll: yes
+    number_sections: yes
+    pandoc_args:
+    - --lua-filter=../templates/scholarly-metadata.lua
+    - --lua-filter=../templates/author-info-blocks.lua
+    - --lua-filter=../templates/pagebreak.lua  
+csl: "../templates/american-fisheries-society.csl"
+bibliography:
+  - AckermanLibrary.bib
+---
+
+<!-- the following inserts MHE logo into header -->
+
+```{=html}
+<script>
+   $(document).ready(function() {
+     $head = $('#header');
+     $head.prepend('<img src=\"logo.jpg\" style=\"float: right;width: 150px;\"/>')
+   });
+</script>
+```
+```{r setup, echo = FALSE, message = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  echo = FALSE,
+  comment = "#>",
+  fig.path = "../figures/",
+  dpi = 600
+)
+
+options(knitr.kable.NA = '--')
+
+```
+
+```{r load-libraries}
+# run this if running chunks directly
+
+# for formatting
+library(kableExtra)
+library(ggpubr)
+
+# for analysis
+library(sf)
+library(here)
+library(tidyverse)
+library(magrittr)
+library(ggmap)
+library(nngeo)
+library(janitor)
+
+theme_set(theme_pubr(x.text.angle = 45,
+                     base_size = 8))
+
+```
+
+
+# Background
+
+The primary purpose of a North Fork Salmon River Assessment is to develop a restoration plan that provides a strategy for informing the identification, prioritization, and development of high-quality projects to improve instream habitats for salmonids listed under the Endangered Species Act (ESA) and other aquatic species. The assessment is intended to identify habitat limitations and associated geomorphically appropriate restoration recommendations for spawning and rearing life stages of Chinook salmon and steelhead along reaches of the North Fork Salmon River and tributaries encompassing approximately 85 km of stream.
+
+Rio ASE and Mount Hood Environmental (MHE) personnel have developed a framework for completing this assessment to support development and prioritization of river, floodplain, and fish habitat restoration actions in the North Fork Salmon River and tributaries. Analyses will be conducted to facilitate the understanding of expected riverine and floodplain processes and the identification of restoration actions that are consistent and compatible with natural reach-scale hydraulic categories, types, and locations of potential restoration actions relative to distinct geomorphic reaches within the watershed. The North Fork Salmon River assessment consists of integrated biological (e.g., fish habitat) and geomorphic analyses to identify restoration actions that are physically appropriate and optimized to improve instream habitats of ESA-listed salmonids and other aquatic species. This approach will provide the basis for linking project identification, development, implementation, and monitoring, and adaptive management at the same spatial scales, in order to plan project development and implementation strategies accordingly.
+
+## Focal Species
+
+The focal species for this fish habitat assessment are:
+
+* Snake River spring/summer-run Chinook salmon (*Oncorhynchus tshawytscha*; hereafter Chinook salmon; ESA-listed threatened)
+* Snake River summer-run steelhead (*O. mykiss*; hereafter steelhead; ESA-listed threatened)
+
+We assume that actions taken to improve habitat conditions for Chinook salmon and steelhead in the North Fork Salmon River would likely also benefit other salmonids, including:
+
+* bull trout (*Salvelinus confluentus*; ESA-listed threatened)
+* westslope cutthroat trout (*O. clarkii lewisi*)
+
+## Study Area
+
+*Study area text here...*
+
+## General Approach
+
+A key component for the biological approach is to assess the watershed (population) habitat carrying capacity necessary to support recovery of Chinook salmon and steelhead and compare that to available habitat capacity to elucidate watershed-scale capacity limitations in the North Fork Salmon River. Information on capacity deficits, by species and life stage (spawning, summer rearing, and winter rearing), can inform geomorphic assessments to identify geomorphically appropriate solutions to resovle limitations, assisting project identification, development, and implementation. Estimates of the capacity necessary to achieve given recovery goals are accomplished using a Generalize Capacity Model [Appendix C in @IdahoOSCTeam2019]. Available habitat capacity estimates are made using a quantile random forest (QRF) framework [@See2021].
+
+The watershed-scale fish habitat capacity assessment is supplemented by a stream temperature assessment, at least for life-stages that occur during summer months, to identify life-stages or locations where growth or survival of Chinook salmon and steelhead may be limited by summer stream temperatures in the North Fork Salmon River, in addition to physical habitat limitations. The stream temperature assessment leverages data available from NorWeST [@Isaak2017a].
+
+We next provide a reach-scale assessment of fish-habitat conditions in the North Fork Salmon River, by species and life stage, using fish habitat surveys completed in the North Fork Salmon River in 2020 and 2021 and using the Drone-Assisted Stream Habitat [DASH - @Carmichael2019] protocol. Additional details on available data, methods, and analyses are provided below.
+
+
+# Watershed Assessment
+
+## Habitat Carrying Capacity
+
+Habitat capacity deficits (e.g., Figure \@ref(fig:capacity-schematic)) resulting from limitations in habitat quantity and/or quality were assessed for three life stages of Chinook salmon and steelhead: 1) spawning (redds), 2) juvenile summer rearing, and 3) juvenile winter rearing. First, the capacity required to meet adults abundance escapement goals was estimated for each of the three life-stages using a Generalized Capacity Model framework [see Appendix C in @IdahoOSCTeam2019]. Then, currently available habitat capacity was estimated using the QRF framework described in @See2021 applied at each life-stage. Next, capacity limitations were identified by substracting required capacity from available capacity, providing an estimate of (potential) habitat capacity deficits by species and life-stage.
+
+```{r capacity-schematic, out.width = "100%", fig.cap = "Schematic depicting an ideal scenario on the left with no limiting factors, while the right depicts a river with significant limiting factors resulting in reduced habitat capacity and production."}
+knitr::include_graphics("../figures/hab-capac-fig.png")
+
+```
+
+```{r load-data, results = 'hide'}
+# NF Salmon QRF extrapolations
+load(here("analysis/data/derived_data/NF_qrf_extrapolations.rda"))
+
+# Project area polygons and 200m layer (with habitat attributes) within project area
+load(here("analysis/data/derived_data/NF_spatial.rda"))
+
+# Species domains for the NF salmon manually modified in QGIS with expert knowledge from Jessica Buelow - IDFG
+NF_crs = st_crs(4326) # WGS84
+NF_sp_domain_sf = st_read(here("analysis/data/raw_data/NF_sp_Domain.gpkg"), quiet = TRUE) %>%
+  st_transform(NF_crs)
+
+NF_sp_domain_df = NF_sp_domain_sf %>%
+  st_drop_geometry() %>%
+  as_tibble()
+
+# append correct domains 
+NF_sum_sf = NF_sum_sf %>%
+  rename(chnk_strmnt = chnk,
+         sthd_strmnt = sthd) %>%
+  left_join(., NF_sp_domain_df %>%
+              select(c("chnk", "sthd","UniqueID")))
+
+NF_win_sf = NF_win_sf %>%
+  rename(chnk_strmnt = chnk,
+         sthd_strmnt = sthd) %>%
+  left_join(., NF_sp_domain_df %>%
+              select(c("chnk","sthd","UniqueID")))
+
+NF_redd_sf = NF_redd_sf %>%
+  rename(chnk_strmnt = chnk,
+         sthd_strmnt = sthd) %>%
+  left_join(., NF_sp_domain_df %>%
+              select(c("chnk","sthd","UniqueID")))
+
+# convert sf objects to tibbles
+NF_sum_df = NF_sum_sf %>%
+  st_drop_geometry() %>%
+  as_tibble()
+
+NF_win_df = NF_win_sf %>%
+  st_drop_geometry() %>%
+  as_tibble()
+
+NF_redd_df = NF_redd_sf %>%
+  st_drop_geometry() %>%
+  as_tibble()
+
+```
+
+
+### Required Capacity
+
+```{r get-params}
+params = read_csv(here("analysis/data/raw_data/LifeHistoryParameters_0622.csv"))
+
+#define target escapement
+target.esc = c(1250, 1500) # Med of potential goal range from MAFAC report
+n.sim = 5000
+
+set.seed(352)
+#Simulate the required abundances by life stage
+
+#With normal distribution - no stoch for egg:parr, parr:presmolt
+reqs = tibble(Sim_number = rep(1:n.sim,2),
+              Species = c(rep("Chinook",n.sim),rep("Steelhead",n.sim)),
+              Escapement = c(rep(target.esc[1],n.sim), rep(target.esc[2],n.sim)),
+              f_ratio = c(rnorm(n.sim, params$Value[1],params$SD[1]),
+                          rnorm(n.sim, params$Value[7],params$SD[7])),
+              redds_f = c(rnorm(n.sim, params$Value[2],params$SD[2]),
+                          rnorm(n.sim, params$Value[8],params$SD[8])),
+              fecund = c(rnorm(n.sim, params$Value[3],params$SD[3]),
+                          rnorm(n.sim, params$Value[9],params$SD[9])),
+              egg_to_parr = c(rep(params$Value[4],n.sim),
+                          rep(params$Value[10],n.sim)),
+              parr_to_presmolt = c(rep(params$Value[5],n.sim),
+                          rep(params$Value[11],n.sim)),
+              egg_to_smolt = c(rep(params$Value[6],n.sim),
+                               rep(params$Value[12],n.sim))) %>%
+  mutate(f_ratio = ifelse(f_ratio < params$Min[1] & Species == "Chinook", params$Min[1],
+                          ifelse(f_ratio > params$Max[1] & Species == "Chinook", params$Max[1],
+                                 ifelse(f_ratio < params$Min[7] & Species == "Steelhead", params$Min[7],
+                                        ifelse(f_ratio > params$Max[7] & Species == "Steelhead", params$Max[7], f_ratio)))),
+         redds_f = ifelse(redds_f < params$Min[2] & Species == "Chinook", params$Min[2],
+                          ifelse(redds_f > params$Max[2] & Species == "Chinook", params$Max[2],
+                                 ifelse(redds_f < params$Min[8] & Species == "Steelhead", params$Min[8],
+                                        ifelse(redds_f > params$Max[8] & Species == "Steelhead", params$Max[8], redds_f)))),
+         fecund = ifelse(fecund < params$Min[3] & Species == "Chinook", params$Min[3],
+                          ifelse(fecund > params$Max[3] & Species == "Chinook", params$Max[3],
+                                 ifelse(fecund < params$Min[9] & Species == "Steelhead", params$Min[9],
+                                        ifelse(fecund > params$Max[9] & Species == "Steelhead", params$Max[9], fecund)))),
+         # egg_to_parr = ifelse(egg_to_parr < params$Min[4] & Species == "Chinook", params$Min[4],
+         #                  ifelse(egg_to_parr > params$Max[4] & Species == "Chinook", params$Max[4],
+         #                         ifelse(egg_to_parr < params$Min[9] & Species == "Steelhead", params$Min[9],
+         #                                ifelse(egg_to_parr > params$Max[9] & Species == "Steelhead", params$Max[9], egg_to_parr)))),
+         # parr_to_presmolt = ifelse(parr_to_presmolt < params$Min[5] & Species == "Chinook", params$Min[5],
+         #                  ifelse(parr_to_presmolt > params$Max[5] & Species == "Chinook", params$Max[5],
+         #                         ifelse(parr_to_presmolt < params$Min[10] & Species == "Steelhead", params$Min[10],
+         #                                ifelse(parr_to_presmolt > params$Max[10] & Species == "Steelhead", params$Max[10], parr_to_presmolt))))
+         ) %>%
+  mutate(Female_escapement = Escapement * f_ratio,
+         Redds = Female_escapement * redds_f,
+         Eggs = Redds * fecund,
+         Summer_juv = Eggs * egg_to_parr,
+         Winter_juv = Summer_juv * parr_to_presmolt,
+         Smolts = Eggs * egg_to_smolt
+           )
+
+#With truncated uniform distribution
+# reqs = tibble(Sim_number = rep(1:n.sim,2),
+#               Species = c(rep("Chinook",n.sim),rep("Steelhead",n.sim)),
+#               Escapement = c(rep(target.esc[1],n.sim), rep(target.esc[2],n.sim)),
+#               f_ratio = c(runif(n.sim, params$Value[1]-params$SD[1], params$Value[1]+params$SD[1]),
+#                           runif(n.sim, params$Value[6]-params$SD[6], params$Value[6]+params$SD[6])),
+#               redds_f = c(runif(n.sim, params$Value[2]-params$SD[2], params$Value[2]+params$SD[2]),
+#                           runif(n.sim, params$Value[7]-params$SD[7], params$Value[7]+params$SD[7])),
+#               fecund = c(runif(n.sim, params$Value[3]-params$SD[3], params$Value[3]+params$SD[3]),
+#                           runif(n.sim, params$Value[8]-params$SD[8],                     params$Value[8]+params$SD[8])),
+#               egg_to_parr = c(runif(n.sim, params$Value[4], params$Value[4]),
+#                           runif(n.sim, params$Value[9], params$Value[9])),
+#               parr_to_presmolt = c(runif(n.sim, params$Value[5], params$Value[5]),
+#                           runif(n.sim, params$Value[10], params$Value[10]))) %>%
+#   mutate(Female_escapement = Escapement * f_ratio,
+#          Redds = Female_escapement * redds_f,
+#          Eggs = Redds * fecund,
+#          Summer_juv = Eggs * egg_to_parr,
+#          Winter_juv = Summer_juv * parr_to_presmolt
+#            )
+
+#Summarize sim results
+reqs_summary = reqs %>%
+  group_by(Species) %>%
+  summarize(Mean_Female_esc = mean(Female_escapement),
+            Female_escapement_se = sd(Female_escapement),
+            Female_escapement_80L = quantile(Female_escapement, .1),
+            Female_escapement_80U = quantile(Female_escapement, .9),
+            Female_escapement_90L = quantile(Female_escapement, 0.05),
+            Female_escapement_90U = quantile(Female_escapement, 0.95),
+            Mean_Redds = mean(Redds),
+            Redds_se = sd(Redds),
+            Redds_80L = quantile(Redds, .1),
+            Redds_80U = quantile(Redds, .9),
+            Redds_90L = quantile(Redds, 0.05),
+            Redds_90U = quantile(Redds, 0.95),
+            Mean_Eggs = mean(Eggs),
+            Eggs_se = sd(Eggs),
+            Eggs_80L = quantile(Eggs, .1),
+            Eggs_80U = quantile(Eggs, .9),
+            Eggs_90L = quantile(Eggs, 0.05),
+            Eggs_90U = quantile(Eggs, 0.95),
+            Mean_Summer_juv = mean(Summer_juv),
+            Summer_juv_se = sd(Summer_juv),
+            Summer_juv_80L = quantile(Summer_juv, .1),
+            Summer_juv_80U = quantile(Summer_juv, .9),
+            Summer_juv_90L = quantile(Summer_juv, 0.05),
+            Summer_juv_90U = quantile(Summer_juv, 0.95),
+            Mean_Winter_juv = mean(Winter_juv),
+            Winter_juv_se = sd(Winter_juv),
+            Winter_juv_80L = quantile(Winter_juv, .1),
+            Winter_juv_80U = quantile(Winter_juv, .9),
+            Winter_juv_90L = quantile(Winter_juv, 0.05),
+            Winter_juv_90U = quantile(Winter_juv, 0.95),
+            Mean_Smolts = mean(Smolts),
+            Smolts_se = sd(Smolts),
+            Smolts_90L = quantile(Smolts, 0.1),
+            Smolts_90U = quantile(Smolts, 0.9)
+            )
+
+reqs_plotdat = reqs %>%
+  left_join(reqs_summary, by = 'Species')
+
+reddsplot = ggplot(reqs_plotdat)+
+  geom_density(aes(x=Redds))+
+  geom_vline(aes(xintercept=Redds_90L), linetype = 'dotted')+
+  geom_vline(aes(xintercept=Redds_90U), linetype = 'dotted')+
+  facet_wrap(~Species) +
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank())
+
+summer_juvsplot = ggplot(reqs_plotdat)+
+  geom_density(aes(x=Summer_juv))+
+  geom_vline(aes(xintercept=Summer_juv_90L), linetype = 'dotted')+
+  geom_vline(aes(xintercept=Summer_juv_90U), linetype = 'dotted')+
+  facet_wrap(~Species) +
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank())
+
+winter_juvsplot = ggplot(reqs_plotdat)+
+  geom_density(aes(x=Winter_juv))+
+  geom_vline(aes(xintercept=Winter_juv_90L), linetype = 'dotted')+
+  geom_vline(aes(xintercept=Winter_juv_90U), linetype = 'dotted')+
+  facet_wrap(~Species) +
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank())
+
+smoltsplot = ggplot(reqs_plotdat)+
+  geom_density(aes(x=Smolts))+
+  geom_vline(aes(xintercept=Smolts_90L), linetype = 'dotted')+
+  geom_vline(aes(xintercept=Smolts_90U), linetype = 'dotted')+
+  facet_wrap(~Species) +
+  theme(axis.ticks.y = element_blank(),
+        axis.text.y = element_blank())
+
+sar_req = target.esc/reqs_summary$Mean_Smolts
+
+rec_goals = tibble(Species = c("Chinook", "Steelhead"),
+                   Scenario = "CBPTF 2020",
+                   Escapement = target.esc) %>%
+  inner_join(params %>%
+               mutate(Parameter = recode(Parameter,
+                                         "Female Ratio" = "prop_fem",
+                                         "Redds/Female" = "redd_per_fem",
+                                         "Fecundity" = "fecund",
+                                         "Egg:Parr" = "egg_to_parr",
+                                         "Parr:Presmolt" = "parr_to_presmolt",
+                                         "Egg:Smolt" = "egg_to_smolt")) %>%
+               pivot_wider(id_cols = "Species",
+                           names_from = "Parameter",
+                           values_from = "Value")) %>%
+  mutate(`Female Escapement` = reqs_summary$Mean_Female_esc,
+         Redds = reqs_summary$Mean_Redds,
+         Eggs = reqs_summary$Mean_Eggs,
+         `Summer Juveniles` = reqs_summary$Mean_Summer_juv,
+         `Winter Juveniles` = reqs_summary$Mean_Winter_juv,
+         Smolts = reqs_summary$Mean_Smolts) %>%
+  select(-c(prop_fem:egg_to_smolt)) %>%
+  pivot_longer(cols = c(Escapement, `Female Escapement`:Smolts),
+               names_to = "LifeStage",
+               values_to = "Abundance") %>%
+  mutate(SE = c(NA,as.numeric(select(reqs_summary, ends_with("se"))[1,]),NA, as.numeric(select(reqs_summary,ends_with("se"))[2,]))) %>%
+  mutate(`90% CI, lower` = c(NA,as.numeric(select(reqs_summary, ends_with("90L"))[1,]),NA, as.numeric(select(reqs_summary,ends_with("90L"))[2,]))) %>%
+  mutate(`90% CI, upper` = c(NA,as.numeric(select(reqs_summary, ends_with("90U"))[1,]),NA, as.numeric(select(reqs_summary,ends_with("90U"))[2,])))
+
+```
+
+The Generalized Capacity Model (GCM) uses a combination of empirical and literature-based parameter estimates (Table \@ref(tab:param-tab)) to determine the capacity required to achieve a given adult abundance goal. We used adult escapement goals of `r prettyNum(rec_goals$Abundance[rec_goals$Species == "Chinook" & rec_goals$LifeStage == "Escapement"], big.mark = ",")` for Chinook salmon and `r prettyNum(rec_goals$Abundance[rec_goals$Species == "Steelhead" & rec_goals$LifeStage == "Escapement"], big.mark = ",")` for steelhead for the North Fork Salmon River. These escapement goals are considered medium-range goals [@CBPTF2020], and in the case of Snake River populations, represent a midpoint between short-term ESA recovery goals and longer-term *healthy and harvestable abundance* goals. If desired, different escapement goals could be used to determine required capacities. 
+
+Required capacities to achieve these goals were estimated using the GCM with a simulation to account for expected inter-annual variation in life history parameters. The simulation was conducted by repeatedly drawing applicable parameters from normal distributions with means and standard deviations defined in Table \@ref(tab:param-tab) and constrained within the range of observed values. Standard deviations for egg-to-parr and parr-to-presmolt survival parameters were set to zero due to small sample sizes, high variability, and potential bias leading to potentially unreliable results. Following, adult escapement goals were multiplied step-wise through the applicable parameter values to obtain capacity requirements by life-stage. For example, the number of redds necessary for recovery was calculated by multiplying the adult escapement goal by the female ratio and the estimated redds per female. We conducted 5,000 simulations, resulting in a range of capacity requirements that were summarized to provide the mean required capacity by life-stage with associated confidence intervals. Sources for each parameter estimate are provided in Table \@ref(tab:param-tab); however, those values can be modified if update or in-basin estimates with empirical support are available.
+
+```{r param-tab}
+params %>%
+  select(-Min, -Max) %>%
+  kable(booktabs = T,
+        digits = 3,
+        align = "lcccc",
+        format.args = list(big.mark = ",",
+                           drop0trailing = T),
+        caption = "Life history parameters for the generalized capacity model.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+The resulting estimated habitat capacity requirements are shown in Table \@ref(tab:require-tab) and represent the necessary abundance at each life-stage to achieve adult escapement goals.
+
+```{r require-tab}
+rec_goals %>%
+  mutate(`90% CI` = paste0("(",round(`90% CI, lower`,0),"-",round(`90% CI, upper`,0),")")) %>%
+  select(-`90% CI, lower`, -`90% CI, upper`) %>%
+  kable(booktabs = T,
+        digits = 0,
+        align = "ccccc",
+        format.args = list(big.mark = ",",
+                           drop0trailing = T),
+        col.names = c("Species", "Scenario","Life-stage","Abundance", "Abundance SE", "90% CI"),
+        caption = "Life-stage specific habitat capacity requirement estimates necessary to achieve given escapement recovery goals.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+
+### Available Capacity
+
+We define the available habitat capacity as the maximal abundance or load the habitat can support for a given species and life-stage given current habitat quantity and quality. Within fisheries research and management, it has been recognized that biotic and abiotic factors limit productivity within and across life-stages. However, we assume that observed fish density is a poor predictor of habitat capacity due to both a paucity of individuals (i.e., low spawner abundance) and the existence of unmeasured biotic or abiotic variables that may limit capacity. Therefore, available habitat capacity estimates were generated using a QRF framework developed by @See2021.
+
+The QRF model is a novel approach to estimate the carrying capacity of wadable stream to support spawning and rearing Chinook salmon and steelhead. The approach involves fitting a QRF [@Meinshausen2006; @Cade2003] to paired fish and habitat data across hundreds of sites in seven watersheds within the Columbia River Basin. Habitat data from the Columbia Habitat Monitoring Program (CHaMP) were paired to juvenile fish and redd survey data to develop fish-habitat relationships [@See2021]. Importantly, the QRF model places no constraints on possible fish-habitat relationships; instead, relationships are estimated from the empirical data regardless of being positive, negative, linear, non-linear, etc. Currently, available QRF models allow evaluation of three anadromous life stages: 1) spawning (redd) capacity, 2) juvenile (parr) summer rearing capacity, and 3) juvenile (presmolt) winter rearing capacity. Using the observed fish-habitat relationships, we can predict habitat capacity at any location with habitat data for model covariates (e.g., at all CHaMP sites) (Table \@ref(tab:cov-tab)). The random forest model produces a distribution of predictions, on for each tree in the forest, and we chose the 90th quantile of that distribution as a proxy for carrying capacity. The QRF models used to estimate available habitat capacity, including data inputs, are described in further detail in Appendix B of @IdahoOSCTeam2019.
+
+```{r cov-tab}
+load(here("analysis/data/derived_data/QRF_cov_tbl.rda"))
+
+QRF_new_hab_cov_tbl %>%
+  select(-Covariate) %>%
+  kable(booktabs = T,
+        align = "ccccccccl",
+        caption = "Habitat covariates and their descriptions used in each of the QRF capacity models. Numbers indicate where each metric ranked in relative importance for each model. Dots indicate a metric was not used for a given model.") %>%
+  kable_styling(position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+Although we have hundreds of sites across the Columbia River basin with detailed habitat data (i.e., CHaMP sites) that were used to estimate capacity within the QRF model, this only covers a small percentage of the anadromous zone within each CHaMP watershed. Therefore, capacity predictions are extrapolated to areas between and outside of CHaMP sites using a [stream layer](https://www.nwfsc.noaa.gov/research/datatech/data/col_basin_hist_project/index.cfm) available from NOAA fisheries and an extrapolation model. This layer consists of a polyline shapefile divided into 200m reaches with various attributes associated with each reach. We refer to these as globally available attributes (GAAs) because they are associated with every reach across all watersheds in the Columbia River Basin. The shapefile is derived from the [National Hydrography Dataset High Resolution](https://www.usgs.gov/core-science-systems/ngp/national-hydrography/nhdplus-high-resolution) (NHDPlus HR) dataset, which has a high resolution, 1:24,000.
+
+We estimated capacity in the North Fork Salmon River watershed by quantifying the relationships between GAAs and QRF capacity predictions at all of the sites used to populate the QRF model. This was conducted using a second random forest model, with GAAs as covariates and QRF-predicted capacities (linear or areal) as the response variable. The random forest approach allows for non-linear associations between capacity and GAAs, and constricts capacity predictions within the estimated range from the initial QRF model. Density predictions for the North Fork Salmon watershed were calculated for the 200m reach segments using the random forest model within GAA inputs, and reach capacity was calculated by multiplying the predicted fish/m by the length of the reach. Capacity for specific for the mainstem and tributaries were then calculated by summing capacities for each.
+
+```{r gaa-tbl}
+load(here("analysis/data/derived_data/gaa_hab_dict.rda"))
+
+gaa_hab_dict %>%
+  kable(booktabs = T,
+        align = "cl",
+        caption = "Globally available attributes and their descriptions used as covariates in the random forest extrapolation model.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r calc-chnk-capacity}
+source(here("R/calc_watershed_cap.R"))
+
+chnk_sum_cap = calc_watershed_cap(NF_huc_sf,
+                                  NF_sum_sf,
+                                  capacity_name = "chnk_per_m",
+                                  capacity_se_name = "chnk_per_m_se",
+                                  by_stream = T)
+
+# Chinook salmon, winter presmolt
+chnk_win_cap = calc_watershed_cap(NF_huc_sf,
+                                  NF_win_sf,
+                                  capacity_name = "chnk_per_m",
+                                  capacity_se_name = "chnk_per_m_se",
+                                  by_stream = T)
+
+# Chinook salmon, redds
+chnk_redd_cap = calc_watershed_cap(NF_huc_sf,
+                                   NF_redd_sf,
+                                   capacity_name = "chnk_per_m",
+                                   capacity_se_name = "chnk_per_m_se",
+                                   by_stream = T)
+
+```
+
+```{r calc-sthd-capacity}
+# steelhead, summer parr
+sthd_sum_cap = calc_watershed_cap(NF_huc_sf,
+                                  NF_sum_sf,
+                                  capacity_name = "sthd_per_m",
+                                  capacity_se_name = "sthd_per_m_se",
+                                  by_stream = T)
+
+# steelhead, winter presmolt
+sthd_win_cap = calc_watershed_cap(NF_huc_sf,
+                                  NF_win_sf,
+                                  capacity_name = "sthd_per_m",
+                                  capacity_se_name = "sthd_per_m_se",
+                                  by_stream = T)
+
+# steelhead, redds
+sthd_redd_cap = calc_watershed_cap(NF_huc_sf,
+                                   NF_redd_sf,
+                                   capacity_name = "sthd_per_m",
+                                   capacity_se_name = "sthd_per_m_se",
+                                   by_stream = T)
+
+```
+
+```{r compile-capacity}
+cap_totals = list(chnk_sum = chnk_sum_cap,
+                  chnk_win = chnk_win_cap,
+                  chnk_redd = chnk_redd_cap,
+                  sthd_sum = sthd_sum_cap,
+                  sthd_win = sthd_win_cap,
+                  sthd_redd = sthd_redd_cap) %>%
+  map_df(.id = "type",
+        .f = function(x) {
+          x %>%
+            filter(StreamName == "Total")
+        }) %>%
+  mutate(Species = str_split(type, "_", simplify = T)[ ,1],
+         LifeStage = str_split(type, "_", simplify = T)[ ,2],
+         tot_cap_90CI_L = tot_cap - tot_cap_se*1.65,
+         tot_cap_90CI_U = tot_cap + tot_cap_se*1.65) %>%
+  mutate(Species = recode(Species,
+                          "chnk" = "Chinook",
+                          "sthd" = "Steelhead"),
+         LifeStage = recode(LifeStage,
+                            "sum" = "Summer Juveniles",
+                            "win" = "Winter Juveniles",
+                            "redd" = "Redds")) %>%
+  select(Species,
+         LifeStage,
+         everything(),
+         -StreamName,
+         -type)
+
+
+#Estimating available capacity in terms of spawners
+availcap_spawners = tibble(Species = c(rep("Chinook",3), rep("Steelhead",3)),
+                           LifeStage = rep(c("Summer Juveniles","Winter Juveniles","Redds"),2),
+                           LifeStage_Cap = cap_totals$tot_cap,
+                           Pred_Spawners = NA)
+
+#chnk
+availcap_spawners$Pred_Spawners[1] = availcap_spawners$LifeStage_Cap[1]/(params$Value[1]*params$Value[2]*params$Value[3]*params$Value[4])
+                                                                         
+availcap_spawners$Pred_Spawners[2] = availcap_spawners$LifeStage_Cap[2]/(params$Value[1]*params$Value[2]*params$Value[3]*params$Value[4]*params$Value[5])
+
+availcap_spawners$Pred_Spawners[3] = availcap_spawners$LifeStage_Cap[3]/(params$Value[1]*params$Value[2])
+
+#sthd
+availcap_spawners$Pred_Spawners[4] = availcap_spawners$LifeStage_Cap[4]/(params$Value[7]*params$Value[8]*params$Value[9]*params$Value[10])
+                                                                         
+availcap_spawners$Pred_Spawners[5] = availcap_spawners$LifeStage_Cap[5]/(params$Value[7]*params$Value[8]*params$Value[9]*params$Value[10]*params$Value[11])
+
+availcap_spawners$Pred_Spawners[6] = availcap_spawners$LifeStage_Cap[6]/(params$Value[7]*params$Value[8])
+
+```
+
+Estimates of total habitat capacity for the North Fork Salmon River by species and life-stage are shown in Table \@ref(tab:cap-table). Estimates were made using the anadromous spatial domain defined in [StreamNet](https://www.streamnet.org/home/data-maps/gis-data-sets/) for Chinook salmon and steelhead, but included minor modifications based on local, expert knowledge (J. Buelow, personal communication). Capacity was extrapolated within these domains for `r unique(cap_totals$n_rchs[cap_totals$Species == "Chinook"])` reaches totaling `r round(unique(cap_totals$tot_length[cap_totals$Species == "Chinook"]) / 1000)` km in length for Chinook salmon and `r prettyNum(unique(cap_totals$n_rchs[cap_totals$Species == "Steelhead"]), big.mark = ",")` reaches totaling `r round(unique(cap_totals$tot_length[cap_totals$Species == "Steelhead"]) / 1000)` km in length for steelhead. Differing spatial domains could be used for both Chinook salmon and steelhead if deemed appropriate. Capacity estimates for individual streams, by species and life-stage, are provided in the [Supplemental Tables and Figures](#supplemental-tables-and-figures).
+
+```{r cap-table}
+cap_totals %>%
+  mutate(avg_cap_per_m = tot_cap / tot_length) %>%
+  mutate(tot_length_km = tot_length / 1000,
+         `90% CI` = paste0("(", round(tot_cap_90CI_L, 0), "-", round(tot_cap_90CI_U, 0),")")) %>%
+  rename(`n Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length_km,
+         Capacity = tot_cap,
+         SE = tot_cap_se,
+         `Avg. Capacity / m` = avg_cap_per_m) %>%
+  select(Species,
+         LifeStage,
+         `n Reaches`,
+         `Stream Length (km)`,
+         Capacity,
+         SE,
+         `90% CI`,
+         `Avg. Capacity / m`) %>%
+  kable(booktabs = T,
+        digits = c(0, 0, 1, 0, 0, 0, 0, 3),
+        align = "cccccccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Species","Life-stage","Reaches","Stream Length (km)", "Capacity","SE", "Capacity 90% CI","Avg. Capacity/m"),
+        caption = "Estimates of current available watershed capacity by species and life-stage.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+Maps depicting capacity extrapolations are useful to visualize low- versus high-capacity areas and can inform prioritization efforts. The information used to generate these maps have been exported in geopackage (*.gpkg) file format and are available in the [NF_assess repository](https://github.com/Mount-Hood-Environmental/NF_assess). Chinook salmon and steelhead capacity extrapolations, shown as areal densities, are depicted in Figures \@ref(fig:chnk-maps) and \@ref(fig:sthd-maps), respectively.
+
+```{r create-chnk-maps}
+# pick a background river color
+river_color = "lightskyblue1"
+
+# chinook summer parr
+chnk_sum_map = NF_sum_sf %>%
+  ggplot() +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_sum_sf %>%
+            filter(chnk),
+          aes(color = chnk_per_m2),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Chinook, Summer Juveniles",
+       color = expression(`Summer Juv` / m^2))
+
+# chinook winter presmolts
+chnk_win_map = NF_win_sf %>%
+  ggplot() +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_win_sf %>%
+            filter(chnk),
+          aes(color = chnk_per_m2),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Chinook, Winter Juveniles",
+       color = expression(`Winter Juv` / m^2))
+
+# chinook redds
+chnk_redd_map = NF_redd_sf %>%
+  ggplot() +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_redd_sf %>%
+            filter(chnk) %>%
+            mutate(chnk_per_km = chnk_per_m * 1000),
+          aes(color = chnk_per_km),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Chinook, Redds",
+       color = expression(Redds / km))
+    
+
+```
+
+```{r create-sthd-maps}
+# steelhead summer juveniles
+sthd_sum_map = NF_sum_sf %>%
+  ggplot() +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_sum_sf %>%
+            filter(sthd),
+          aes(color = sthd_per_m2),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Steelhead, Summer Juveniles",
+       color = expression(`Summer Juv` / m^2))
+
+# steelhead winter juveniles
+sthd_win_map = NF_win_sf %>%
+  ggplot() +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_win_sf %>%
+            filter(sthd),
+          aes(color = sthd_per_m2),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Steelhead, Winter Juveniles",
+       color = expression(`Winter Juv` / m^2))
+
+# steelhead redds
+sthd_redd_map = NF_redd_sf %>%
+  ggplot() +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_redd_sf %>%
+            filter(sthd) %>%
+            mutate(sthd_per_km = sthd_per_m * 1000),
+          aes(color = sthd_per_km),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Steelhead, Redds",
+       color = expression(Redds / km))
+
+```
+
+```{r chnk-maps, fig.cap = "Extrapolations of habitat capacity for Chinook salmon, by life-stage, within the North Fork Salmon watershed."}
+ggarrange(chnk_sum_map,
+          chnk_win_map,
+          chnk_redd_map)
+
+```
+
+```{r sthd-maps, fig.cap = "Extrapolations of habitat capacity for steelhead, by life-stage, within the North Fork Salmon watershed.."}
+ggarrange(sthd_sum_map,
+          sthd_win_map,
+          sthd_redd_map)
+
+```
+
+### Habitat Capacity Limitations
+
+Finally, (potential) habitat capacity limitations were quantified by subtracting required capacity from available capacity (Table \@ref(tab:cap-limits)). When required capacity exceeds available capacity, this represents a habitat capacity deficit for a given species and life-stage in the North Fork Salmon River watershed. Deficits can be used to identify potential species and life-stage limitations in physical habitat quantity and/or quality. Relative habitat capacity deficits were also calculated as available capacity divided by required capacity (Table \@ref(tab:cap-limits)) to help provide guidance on species and life-stages where rehabilitation efforts could be targeted. Comparisons of available and required capacity by are also depicted in Figures \@ref(fig:chnk-def-fig) and \@ref(fig:sthd-def-fig).
+
+```{r cap-limits}
+rec_goals %>%
+  left_join(cap_totals %>%
+              select(-n_rchs,
+                     -tot_length)) %>%
+  filter(LifeStage != "Smolts") %>%
+  mutate(Deficit = Abundance - tot_cap,
+         `Relative Deficit` = Deficit / tot_cap) %>%
+  rename(`Required Capacity` = Abundance,
+         `Available Capacity` = tot_cap,
+         `Capacity SE` = tot_cap_se) %>%
+  select(-tot_cap_90CI_U, -tot_cap_90CI_L, -`90% CI, lower`, -`90% CI, upper`) %>%
+  kable(booktabs = T,
+        digits = c(0,0,0,0,0,0,0,0,2),
+        align = "cccccccccccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Species","Scenario","Life-stage","Required Capacity", "Required Capacity SE","Available Capacity","Available Capacity SE","Deficit","Relative Deficit"),
+        caption = "Capacity deficits and relative deficits based on recovery goals.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r chnk-def-fig, fig.cap = "Estimated available capacity given current habitat conditions for Chinook salmon at three life-stages in the North Fork Salmon watershed. Available capacity was calculated using a quantile random forest (QRF) approach, and required capacity was calculated using a Generalized Capacity Model with adult escapement goals. Error bars represent 90% confidence intervals."}
+chnk_def_p = rec_goals %>%
+  select(-Scenario) %>%
+  filter(Species == "Chinook",
+         LifeStage %in% c("Redds",
+                          "Summer Juveniles",
+                          "Winter Juveniles")) %>%
+  left_join(cap_totals %>%
+              select(-n_rchs,
+                     -tot_length)) %>%
+  select(!Species) %>%
+  rename(Required = Abundance,
+         Available = tot_cap,
+         se = tot_cap_se) %>%
+  pivot_longer(cols = c("Required",
+                        "Available")) %>%
+  mutate(std.error = ifelse(name == "Required", SE, se),
+         cap_90CI_L = ifelse(name == "Required", `90% CI, lower`, tot_cap_90CI_L),
+         cap_90CI_U = ifelse(name == "Required", `90% CI, upper`, tot_cap_90CI_U)) %>%
+  select(LifeStage, name, value, std.error, cap_90CI_L, cap_90CI_U) %>%
+  ggplot() +
+  geom_bar(aes(x = name,
+               y = value,
+               fill = name),
+           color = "black",
+           stat = "identity") +
+  scale_x_discrete(limits = rev) +
+  scale_fill_manual(name = "Capacity",
+                    values = c("gray30", "forestgreen")) +
+  coord_flip() +
+  facet_wrap(~ LifeStage,
+             scales = "free",
+             ncol = 1,
+             strip.position = "left",
+             labeller = labeller(LifeStage = label_wrap_gen(width = 10))) +
+  geom_errorbar(aes(x = name,
+                    ymin = cap_90CI_L,
+                    ymax = cap_90CI_U),
+                width = 0.3,
+                size = 0.5) +
+  scale_y_continuous(labels = scales::comma,
+                     expand = c(0,0)) +
+  labs(title = "Chinook salmon") +
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.x = element_text(size = 8,
+                                   color = "black"),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 10),
+        strip.text.y = element_text(size = 10),
+        plot.title = element_text(size = 12,
+                                  face = "bold"),
+        legend.position = "right")
+chnk_def_p
+
+```
+
+```{r sthd-def-fig, fig.cap = "Estimated available capacity given current habitat conditions for steelhead at three life-stages in the North Fork Salmon watershed. Available capacity was calculated using a quantile random forest (QRF) approach, and required capacity was calculated using a Generalized Capacity Model with adult escapement goals. Error bars represent 90% confidence intervals."}
+sthd_def_p = rec_goals %>%
+  select(-Scenario) %>%
+  filter(Species == "Steelhead",
+         LifeStage %in% c("Redds",
+                          "Summer Juveniles",
+                          "Winter Juveniles")) %>%
+  left_join(cap_totals %>%
+              select(-n_rchs,
+                     -tot_length)) %>%
+  select(!Species) %>%
+  rename(Required = Abundance,
+         Available = tot_cap,
+         se = tot_cap_se) %>%
+  pivot_longer(cols = c("Required",
+                        "Available")) %>%
+  mutate(std.error = ifelse(name == "Required", SE, se),
+         cap_90CI_L = ifelse(name == "Required", `90% CI, lower`, tot_cap_90CI_L),
+         cap_90CI_U = ifelse(name == "Required", `90% CI, upper`, tot_cap_90CI_U)) %>%
+  select(LifeStage, name, value, std.error, cap_90CI_L, cap_90CI_U) %>%
+  ggplot() +
+  geom_bar(aes(x = name,
+               y = value,
+               fill = name),
+           color = "black",
+           stat = "identity") +
+  scale_x_discrete(limits = rev) +
+  scale_fill_manual(name = "Capacity",
+                    values = c("gray30", "dodgerblue3")) +
+  coord_flip() +
+  facet_wrap(~ LifeStage,
+             scales = "free",
+             ncol = 1,
+             strip.position = "left",
+             labeller = labeller(LifeStage = label_wrap_gen(width = 10))) +
+  geom_errorbar(aes(x = name,
+                    ymin = cap_90CI_L,
+                    ymax = cap_90CI_U),
+                width = 0.3,
+                size = 0.5) +
+  scale_y_continuous(labels = scales::comma,
+                     expand = c(0,0)) +
+  labs(title = "Steelhead") +
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks.y = element_blank(),
+        axis.text.x = element_text(size = 8,
+                                   color = "black"),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 10),
+        strip.text.y = element_text(size = 10),
+        plot.title = element_text(size = 12,
+                                  face = "bold"),
+        legend.position = "right")
+sthd_def_p
+
+```
+
+Available capacity deficits can also be evaluated in terms of spawning escapement using the GCM approach (Table \@ref(tab:cap-spawnconv-tbl)). For example, predicted redd capacity is divided by the estimated number of redds per female and the female ratio to provied an estimate of the spawner abundance supported given the available capacity for a given life stage.
+
+```{r cap-spawnconv-tbl}
+availcap_spawners %>%
+  #rename(`Life Stage` = LifeStage,
+  #       `Available Capacity` = LifeStage_Cap,
+  #       `Predicted Spawners` = Pred_Spawners) %>%
+  kable(booktabs = T,
+        digits = c(0,0,0,0),
+        align = "cccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Species","Life-stage","Available Capacity","Predicted Spawners"),
+        caption = "Estimated capacity by life-stage and the predicted abundance of spawners supported.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+## Summer Stream Temperature
+
+# Reach Assessment
+
+# Literature Cited
+
+<!-- The following line ensures the references appear here for the MS Word or HTML output files, rather than right at the end of the document (this will not work for PDF files):  -->
+
+::: {#refs}
+:::
+
+# Supplementary Tables and Figures
+
+## Available Habitat Capacity (QRF) Estimates
+
+### Chinook Salmon
+
+```{r chnk-sum-tbl}
+chnk_sum_cap %>%
+  subset(!StreamName == "Total" | is.na(StreamName)) %>%
+  adorn_totals() %>%
+  mutate(tot_length = tot_length / 1000) %>%
+  rename(`n Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se) %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0),
+        align = "lcccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
+        caption = "Estimated available habitat for **juvenile summer rearing** Chinook salmon in the North Fork Salmon watershed.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r chnk-win-tbl}
+chnk_win_cap %>%
+  subset(!StreamName == "Total" | is.na(StreamName)) %>%
+  adorn_totals() %>%
+  mutate(tot_length = tot_length / 1000) %>%
+  rename(`n Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se) %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0),
+        align = "lcccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
+        caption = "Estimated available habitat for **juvenile winter rearing** Chinook salmon in the North Fork Salmon watershed.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r chnk-redd-tbl}
+chnk_redd_cap %>%
+  subset(!StreamName == "Total" | is.na(StreamName)) %>%
+  adorn_totals() %>%
+  mutate(tot_length = tot_length / 1000) %>%
+  rename(`n Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se) %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0),
+        align = "lcccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
+        caption = "Estimated available **spawning (redds)** habitat for Chinook salmon in the North Fork Salmon watershed.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+### Steelhead
+
+```{r sthd-sum-tbl}
+sthd_sum_cap %>%
+  subset(!StreamName == "Total" | is.na(StreamName)) %>%
+  adorn_totals() %>%
+  mutate(tot_length = tot_length / 1000) %>%
+  rename(`n Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se) %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0),
+        align = "lcccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
+        caption = "Estimated available habitat for **juvenile summer rearing** steelhead in the North Fork Salmon watershed.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r sthd-win-tbl}
+sthd_win_cap %>%
+  subset(!StreamName == "Total" | is.na(StreamName)) %>%
+  adorn_totals() %>%
+  mutate(tot_length = tot_length / 1000) %>%
+  rename(`n Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se) %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0),
+        align = "lcccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
+        caption = "Estimated available habitat for **juvenile winter rearing** steelhead in the North Fork Salmon watershed.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r sthd-redd-tbl}
+sthd_redd_cap %>%
+  subset(!StreamName == "Total" | is.na(StreamName)) %>%
+  adorn_totals() %>%
+  mutate(tot_length = tot_length / 1000) %>%
+  rename(`n Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se) %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0),
+        align = "lcccc",
+        format.args = list(big.mark = ","),
+        col.names = c("Stream Name","Reaches","Stream Length (km)", "Capacity","Capacity SE"),
+        caption = "Estimated available **spawning (redds)** habitat for steelhead in the North Fork Salmon watershed.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+## Available vs. Required Capacity Model Predictions
+
+```{r chnk-dens-req-fig, fig.cap = "Comparison of model predictions for available and required habitat capacities."}
+chnk_def_line = rec_goals %>%
+  select(-Scenario) %>%
+  filter(Species == "Chinook",
+         LifeStage %in% c("Redds",
+                          "Summer Juveniles",
+                          "Winter Juveniles")) %>%
+  left_join(cap_totals %>%
+              select(-n_rchs,
+                     -tot_length)) %>%
+  select(!Species) %>%
+  rename(Required = Abundance,
+         Available = tot_cap,
+         se = tot_cap_se) %>%
+  pivot_longer(cols = c("Required",
+                        "Available")) %>%
+  mutate(std.error = ifelse(name == "Required", SE, se),
+         cap_90CI_L = ifelse(name == "Required", `90% CI, lower`, tot_cap_90CI_L),
+         cap_90CI_U = ifelse(name == "Required", `90% CI, upper`, tot_cap_90CI_U)) %>%
+  select(LifeStage, name, value, std.error, cap_90CI_L, cap_90CI_U) %>%
+  ggplot() +
+  geom_point(aes(x = name,
+               y = value),
+           color = "black",
+           stat = "identity") +
+  scale_x_discrete(limits = rev) +
+  scale_fill_manual(name = "Capacity",
+                    values = c("gray30", "forestgreen")) +
+  coord_flip() +
+  facet_wrap(~ LifeStage,
+             scales = "free",
+             ncol = 1,
+             strip.position = "left",
+             labeller = labeller(LifeStage = label_wrap_gen(width = 10))) +
+  geom_errorbar(aes(x = name,
+                    ymin = cap_90CI_L,
+                    ymax = cap_90CI_U),
+                width = 0,
+                size = 0.2) +
+  scale_y_continuous(labels = scales::comma,
+                     expand = c(0,0)) +
+  labs(title = "Chinook salmon") +
+  theme(axis.title.x = element_blank(),
+        axis.title.y = element_blank(),
+        #axis.text.y = element_blank(),
+        #axis.ticks.y = element_blank(),
+        axis.text.x = element_text(size = 8,
+                                   color = "black"),
+        legend.title = element_text(size = 10),
+        legend.text = element_text(size = 10),
+        strip.text.y = element_text(size = 10),
+        plot.title = element_text(size = 12,
+                                  face = "bold"),
+        legend.position = "right")
+chnk_def_line
+
+```
