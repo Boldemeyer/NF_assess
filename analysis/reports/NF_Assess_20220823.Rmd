@@ -106,10 +106,6 @@ We assume that actions taken to improve habitat conditions for Chinook salmon an
 * bull trout (*Salvelinus confluentus*; ESA-listed threatened)
 * westslope cutthroat trout (*O. clarkii lewisi*)
 
-## Study Area
-
-*Study area text here...*
-
 ## General Approach
 
 A key component for the biological approach is to assess the watershed (population) habitat carrying capacity necessary to support recovery of Chinook salmon and steelhead and compare that to available habitat capacity to elucidate watershed-scale capacity limitations in the North Fork Salmon River. Information on capacity deficits, by species and life stage (spawning, summer rearing, and winter rearing), can inform geomorphic assessments to identify geomorphically appropriate solutions to resovle limitations, assisting project identification, development, and implementation. Estimates of the capacity necessary to achieve given recovery goals are accomplished using a Generalize Capacity Model [Appendix C in @IdahoOSCTeam2019]. Available habitat capacity estimates are made using a quantile random forest (QRF) framework [@See2021].
@@ -187,7 +183,7 @@ NF_redd_df = NF_redd_sf %>%
 params = read_csv(here("analysis/data/raw_data/LifeHistoryParameters_0622.csv"))
 
 #define target escapement
-target.esc = c(1250, 1500) # Med of potential goal range from MAFAC report
+target.esc = c(625, 625) # Chinook, steelhead; MAT + 25%
 n.sim = 5000
 
 set.seed(352)
@@ -365,7 +361,7 @@ rec_goals = tibble(Species = c("Chinook", "Steelhead"),
 
 ```
 
-The Generalized Capacity Model (GCM) uses a combination of empirical and literature-based parameter estimates (Table \@ref(tab:param-tab)) to determine the capacity required to achieve a given adult abundance goal. We used adult escapement goals of `r prettyNum(rec_goals$Abundance[rec_goals$Species == "Chinook" & rec_goals$LifeStage == "Escapement"], big.mark = ",")` for Chinook salmon and `r prettyNum(rec_goals$Abundance[rec_goals$Species == "Steelhead" & rec_goals$LifeStage == "Escapement"], big.mark = ",")` for steelhead for the North Fork Salmon River. These escapement goals are considered medium-range goals [@CBPTF2020], and in the case of Snake River populations, represent a midpoint between short-term ESA recovery goals and longer-term *healthy and harvestable abundance* goals. If desired, different escapement goals could be used to determine required capacities. 
+The Generalized Capacity Model (GCM) uses a combination of empirical and literature-based parameter estimates (Table \@ref(tab:param-tab)) to determine the capacity required to achieve a given adult abundance goal. We used adult escapement goals of `r prettyNum(rec_goals$Abundance[rec_goals$Species == "Chinook" & rec_goals$LifeStage == "Escapement"], big.mark = ",")` for Chinook salmon and `r prettyNum(rec_goals$Abundance[rec_goals$Species == "Steelhead" & rec_goals$LifeStage == "Escapement"], big.mark = ",")` for steelhead for the North Fork Salmon River. These escapement goals represent a minimum abundance threshold (MAT) [@NOAA2017] that provide an easily adoptable biological target to guide tributary habitat enhancement. Because the MATs set forth in @NOAA2017 are assessed using a 10-year geometric mean, it is necessary to ensure that adult escapement into each tributary equals or exceeds MAT. To accommodate this, @IdahoOSCTeam2019 included a 25% buffer (MAT + 25%) to ensure that goals will be met or exceeded. A margin of safetey also provides a buffer due to variability in ocean condtions, conditions in the downstream migration corridor, and potential climate change scenarios. However, if desired, different escapement goals could be assessed to determine required habitat capacities e.g., escapement goals set forth in @CBPTF2020.
 
 Required capacities to achieve these goals were estimated using the GCM with a simulation to account for expected inter-annual variation in life history parameters. The simulation was conducted by repeatedly drawing applicable parameters from normal distributions with means and standard deviations defined in Table \@ref(tab:param-tab) and constrained within the range of observed values. Standard deviations for egg-to-parr and parr-to-presmolt survival parameters were set to zero due to small sample sizes, high variability, and potential bias leading to potentially unreliable results. Following, adult escapement goals were multiplied step-wise through the applicable parameter values to obtain capacity requirements by life-stage. For example, the number of redds necessary for recovery was calculated by multiplying the adult escapement goal by the female ratio and the estimated redds per female. We conducted 5,000 simulations, resulting in a range of capacity requirements that were summarized to provide the mean required capacity by life-stage with associated confidence intervals. Sources for each parameter estimate are provided in Table \@ref(tab:param-tab); however, those values can be modified if update or in-basin estimates with empirical support are available.
 
@@ -899,6 +895,91 @@ availcap_spawners %>%
 ```
 
 ## Summer Stream Temperature
+
+A combination of modeled NorWeST summer stream temperature predictions [@Isaak2017a] for the North Fork Salmon River plus life-stage-specific temperature thresholds (Table \@ref(tab:temp-thresh)) [@Carter2005] were used to evaluate whether current stream temperatures might limit the ability of Chinook salmon and steelhead to use available habitat during summer months.
+
+```{r temp-thresh}
+temp_thresh_tab = tibble(Species = c("Chinook", "Chinook", "Steelhead"),
+                         `Life Stage` = c("Spawning", "Summer Rearing", "Summer Rearing"),
+                         Timing = c("8/10 - 9/30", "6/10 - 10/15", "6/10 - 10/15"),
+                         Minimum = c("3.3", "4.5", "4.5"),
+                         Optimum = c("7.2-14.5", "10-16", "10-18"),
+                         Maximum = c("18", "20", "19"),
+                         Acute = c("20", "22", "22")) %>%
+  kable(booktabs = T,
+        align = "ccccccc",
+        caption = "Life stage timing, and minimum, optimum, maximu, and acute temperature (Celcius) thresholds for summer life stages of Chinook salmon and steelhead, adopted from Carter (2005). All temperatures are expressed as the 7-day Maximum Weekly Maximum Temperature (MWMT).") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+temp_thresh_tab
+
+```
+
+```{r norwest}
+river_color = "lightskyblue1"
+
+norwest_df = NF_rch_sf %>%
+  select(S2_02_11,
+         S30_2040D,
+         S32_2080D) %>%
+  mutate(S2_02_11 = replace(S2_02_11, S2_02_11 == -9999.00, NA),
+         S30_2040D = replace(S30_2040D, S30_2040D == -9999.00, NA),
+         S32_2080D = replace(S32_2080D, S32_2080D == -9999.00, NA)) %>%
+  pivot_longer(cols = c("S2_02_11",
+                        "S30_2040D",
+                        "S32_2080D"),
+               names_to = "scenario",
+               values_to = "temp_c")
+
+norwest_p = norwest_df %>%
+  ggplot() +
+  geom_sf(data = NF_huc_sf %>%
+            st_union(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = norwest_df,
+          aes(color = temp_c),
+          size = 1) +
+  scale_color_viridis_c(option = "turbo") +
+  facet_wrap(~ scenario,
+             ncol = 3) +
+  theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "NorWeST Stream Temperature Predictions",
+       color = expression("Temperature ("^o*"C)"))
+norwest_p
+
+# temp_thresh_df = NF_rch_sf %>%
+#   select(S2_02_11,
+#          S30_2040D,
+#          S32_2080D) %>%
+#   mutate(S2_02_11 = replace(S2_02_11, S2_02_11 == -9999.00, NA),
+#          S30_2040D = replace(S2_02_11, S2_02_11 == -9999.00, NA),
+#          S32_2080D = replace(S2_02_11, S2_02_11 == -9999.00, NA)) %>%
+#   mutate(cur_min1 = S2_02_11 - 1) %>%
+#   mutate(ao_chnk_spawn_cur = ifelse(S2_02_11 > 14.5, T, F),
+#          ao_chnk_spawn_2040 = ifelse(S2_02_11 > 14.5, T, F),
+#          ao_chnk_spawn_2080 = ifelse(S2_02_11 > 14.5, T, F),
+#          ao_chnk_spawn_min1 = ifelse(S2_02_11 > 14.5, T, F),
+#          ao_chnk_rear_cur = ifelse(S2_02_11 > 16, T, F),
+#          ao_chnk_rear_2040 = ifelse(S2_02_11 > 16, T, F),
+#          ao_chnk_rear_2080 = ifelse(S2_02_11 > 16, T, F),
+#          ao_chnk_rear_min1 = ifelse(S2_02_11 > 16, T, F),
+#          ao_sthd_spawn_cur = ifelse(S2_02_11 > 18, T, F),
+#          ao_sthd_spawn_2040 = ifelse(S2_02_11 > 18, T, F),
+#          ao_sthd_spawn_2080 = ifelse(S2_02_11 > 18, T, F),
+#          ao_sthd_spawn_min1 = ifelse(S2_02_11 > 18, T, F))
+
+```
+
+```{r thresh-map}
+
+```
 
 # Reach Assessment
 
