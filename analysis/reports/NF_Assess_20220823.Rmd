@@ -918,7 +918,6 @@ temp_thresh_tab
 
 ```{r norwest}
 river_color = "lightskyblue1"
-
 norwest_df = NF_rch_sf %>%
   select(S2_02_11,
          S30_2040D,
@@ -954,30 +953,23 @@ norwest_p = norwest_df %>%
        color = expression("Temperature ("^o*"C)"))
 norwest_p
 
-# temp_thresh_df = NF_rch_sf %>%
-#   select(S2_02_11,
-#          S30_2040D,
-#          S32_2080D) %>%
-#   mutate(S2_02_11 = replace(S2_02_11, S2_02_11 == -9999.00, NA),
-#          S30_2040D = replace(S2_02_11, S2_02_11 == -9999.00, NA),
-#          S32_2080D = replace(S2_02_11, S2_02_11 == -9999.00, NA)) %>%
-#   mutate(cur_min1 = S2_02_11 - 1) %>%
-#   mutate(ao_chnk_spawn_cur = ifelse(S2_02_11 > 14.5, T, F),
-#          ao_chnk_spawn_2040 = ifelse(S2_02_11 > 14.5, T, F),
-#          ao_chnk_spawn_2080 = ifelse(S2_02_11 > 14.5, T, F),
-#          ao_chnk_spawn_min1 = ifelse(S2_02_11 > 14.5, T, F),
-#          ao_chnk_rear_cur = ifelse(S2_02_11 > 16, T, F),
-#          ao_chnk_rear_2040 = ifelse(S2_02_11 > 16, T, F),
-#          ao_chnk_rear_2080 = ifelse(S2_02_11 > 16, T, F),
-#          ao_chnk_rear_min1 = ifelse(S2_02_11 > 16, T, F),
-#          ao_sthd_spawn_cur = ifelse(S2_02_11 > 18, T, F),
-#          ao_sthd_spawn_2040 = ifelse(S2_02_11 > 18, T, F),
-#          ao_sthd_spawn_2080 = ifelse(S2_02_11 > 18, T, F),
-#          ao_sthd_spawn_min1 = ifelse(S2_02_11 > 18, T, F))
-
 ```
 
 ```{r thresh-map}
+thresh_df = norwest_df %>%
+  mutate(`Chinook Spawning` = ifelse(temp_c > 14.5, T, F),
+         `Chinook Rearing` = ifelse(temp_c > 16, T, F),
+         `Steelhead Rearing` = ifelse(temp_c > 18, T, F)) %>%
+  pivot_longer(cols = c("Chinook Spawning",
+                        "Chinook Rearing",
+                        "Steelhead Rearing"),
+               names_to = "spec_ls",
+               values_to = "above_optimum") %>%
+  # get reach length
+  st_join(NF_rch_sf %>%
+              select(geometry,
+                     reach_leng))
+
 
 ```
 
