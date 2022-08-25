@@ -944,7 +944,7 @@ norwest_p = norwest_df %>%
   scale_color_viridis_c(option = "turbo") +
   facet_wrap(~ scenario,
              ncol = 3) +
-  theme_bw() +
+  theme_classic() +
   theme(legend.position = "bottom",
         axis.text.x = element_blank(),
         axis.text.y = element_blank(),
@@ -965,11 +965,32 @@ thresh_df = norwest_df %>%
                         "Steelhead Rearing"),
                names_to = "spec_ls",
                values_to = "above_optimum") %>%
+  mutate(above_optimum = replace_na(above_optimum, F)) %>%
   # get reach length
   st_join(NF_rch_sf %>%
               select(geometry,
                      reach_leng))
 
+thresh_p = thresh_df %>%
+  ggplot() +
+  geom_sf(data = NF_huc_sf %>%
+            st_union(),
+          fill = NA,
+          color = "gray50") +
+  #geom_sf(color = river_color) +
+  geom_sf(data = thresh_df,
+          aes(color = above_optimum),
+          size = 1) +
+  scale_color_manual(values = c("FALSE" = river_color,
+                                "TRUE" = "red")) +
+  facet_grid(spec_ls ~ scenario) +
+  theme_classic() +
+  theme(legend.position = "top",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(color = "Above Optimum Temperature")
+thresh_p
 
 ```
 
