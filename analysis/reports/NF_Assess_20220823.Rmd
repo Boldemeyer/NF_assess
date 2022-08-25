@@ -896,27 +896,15 @@ availcap_spawners %>%
 
 ## Summer Stream Temperature
 
-A combination of modeled NorWeST summer stream temperature predictions [@Isaak2017a] for the North Fork Salmon River plus life-stage-specific temperature thresholds (Table \@ref(tab:temp-thresh)) [@Carter2005] were used to evaluate whether current stream temperatures might limit the ability of Chinook salmon and steelhead to use available habitat during summer months.
+We used a combination of modeled NorWeST summer stream temperature predictions [@Isaak2017a] for the North Fork Salmon River (Figure \@ref(fig:norwest)) plus life-stage specific temperature thresholds (Table \@ref(tab:temp-thresh)) [@Carter2005] to evaluate whether current or future projected stream temperatures might hinder the ability of Chinook salmon and steelhead to use available habitat during summer months. Three NorWeST temperature scenarios were considered:
 
-```{r temp-thresh}
-temp_thresh_tab = tibble(Species = c("Chinook", "Chinook", "Steelhead"),
-                         `Life Stage` = c("Spawning", "Summer Rearing", "Summer Rearing"),
-                         Timing = c("8/10 - 9/30", "6/10 - 10/15", "6/10 - 10/15"),
-                         Minimum = c("3.3", "4.5", "4.5"),
-                         Optimum = c("7.2-14.5", "10-16", "10-18"),
-                         Maximum = c("18", "20", "19"),
-                         Acute = c("20", "22", "22")) %>%
-  kable(booktabs = T,
-        align = "ccccccc",
-        caption = "Life stage timing, and minimum, optimum, maximu, and acute temperature (Celcius) thresholds for summer life stages of Chinook salmon and steelhead, adopted from Carter (2005). All temperatures are expressed as the 7-day Maximum Weekly Maximum Temperature (MWMT).") %>%
-  kable_styling(full_width = F,
-                position = "center",
-                bootstrap_options = c("striped", "condensed"))
-temp_thresh_tab
+* **S2_02_11**: A historical composite scenario representing the 10-year average August mean stream temperatures for 2002-2011.
 
-```
+* **S30_2040D**: A future August mean stream temperature scenario based on global ensemble average project changes in August air temperature and stream discharge for A1B warming trajectory in the 2040s (2030-2059). Future stream deltas within a NorWeST unit account for differential sensitivity among streams so that cold streams warm less than warm streams.
 
-```{r norwest}
+* **S32_20840D**: A future August mean stream temperature scenario based on global ensemble average project changes in August air temperature and stream discharge for A1B warming trajectory in the 2080s (2070-2099). Future stream deltas within a NorWeST unit account for differential sensitivity among streams so that cold streams warm less than warm streams.
+
+```{r norwest, fig.cap = "Current (S2_02_11) and projected (S30_2040D and S32_2080D) August mean stream temperature scenarios available from NorWest (Isaak et al. 2017) for the North Fork Salmon River."}
 river_color = "lightskyblue1"
 norwest_df = NF_rch_sf %>%
   select(S2_02_11,
@@ -955,7 +943,27 @@ norwest_p
 
 ```
 
-```{r thresh-map}
+```{r temp-thresh}
+temp_thresh_tab = tibble(Species = c("Chinook", "Chinook", "Steelhead"),
+                         `Life Stage` = c("Spawning", "Summer Rearing", "Summer Rearing"),
+                         Timing = c("8/10 - 9/30", "6/10 - 10/15", "6/10 - 10/15"),
+                         Minimum = c("3.3", "4.5", "4.5"),
+                         Optimum = c("7.2-14.5", "10-16", "10-18"),
+                         Maximum = c("18", "20", "19"),
+                         Acute = c("20", "22", "22")) %>%
+  kable(booktabs = T,
+        align = "ccccccc",
+        caption = "Life stage timing, and minimum, optimum, maximu, and acute temperature (Celcius) thresholds for summer life stages of Chinook salmon and steelhead, adopted from Carter (2005). All temperatures are expressed as the 7-day Maximum Weekly Maximum Temperature (MWMT).") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+temp_thresh_tab
+
+```
+
+We calculated whether current and projected August mean stream temperatures exceeded the optimum range (Table \@ref(tab:temp-thresh)) for summer life stages of Chinook salmon and steelhead. For Chinook salmon, we considered the spawning and summer parr life-stages, and for steelhead, the summer parr life stage was considered (Figure \@ref(fig:thresh-map)).
+
+```{r thresh-map, fig.cap = "Maps depicting whether current (S2_02_11) and projected (S302040D and S32_2080D) August mean stream temperatures exceed (TRUE) or are below (FALSE) the optimal range for summer life stages of Chinook salmon and steelhead and within the North Fork Salmon River."}
 thresh_df = norwest_df %>%
   mutate(`Chinook Spawning` = ifelse(temp_c > 14.5, T, F),
          `Chinook Rearing` = ifelse(temp_c > 16, T, F),
