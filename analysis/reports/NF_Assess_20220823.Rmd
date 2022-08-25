@@ -963,7 +963,7 @@ temp_thresh_tab
 
 We calculated whether current and projected August mean stream temperatures exceeded the optimum range (Table \@ref(tab:temp-thresh)) for summer life stages of Chinook salmon and steelhead. For Chinook salmon, we considered the spawning and summer parr life-stages, and for steelhead, the summer parr life stage was considered (Figure \@ref(fig:thresh-map)).
 
-```{r thresh-map, fig.cap = "Maps depicting whether current (S2_02_11) and projected (S302040D and S32_2080D) August mean stream temperatures exceed (TRUE) or are below (FALSE) the optimal range for summer life stages of Chinook salmon and steelhead and within the North Fork Salmon River."}
+```{r thresh-map, out.width = "100%", fig.cap = "Maps depicting whether current (S2_02_11) and projected (S302040D and S32_2080D) August mean stream temperatures exceed (TRUE) or are below (FALSE) the optimal range for summer life stages of Chinook salmon and steelhead and within the North Fork Salmon River."}
 thresh_df = norwest_df %>%
   mutate(`Chinook Spawning` = ifelse(temp_c > 14.5, T, F),
          `Chinook Rearing` = ifelse(temp_c > 16, T, F),
@@ -1003,6 +1003,130 @@ thresh_p
 ```
 
 # Reach Assessment
+
+```{r load-dash}
+dash_df = readRDS(here("analysis/data/derived_data/dash_hr_18-21.rds"))
+
+# create summary table of DASH surveys in NF Salmon
+nf_dash_summ = dash_df %>%
+  filter(site_name %in% c("Arbon",
+                          "Barton",
+                          "Granite Mt Bridge",
+                          "Hughes Cr Bridge",
+                          "Miller",
+                          "Miller 2021",
+                          "Murphy",
+                          "NF Reference",
+                          "Sheep Cr",
+                          "Thomas",
+                          "Upper NF")) %>%
+  group_by(site_name) %>%
+  summarise(Year = unique(year),
+            `Habitat Reaches` = n(),
+            `Channel Units` = sum(n_cu),
+            `Length (m)` = sum(hr_length_m)) %>%
+  rename(`Site Name` = site_name) %>%
+  st_drop_geometry() 
+
+```
+
+Reach-scale stream habitat surveys were completed for `r nrow(nf_dash_summ)` sites in the North Fork Salmon River which included `` r sum(nf_dash_summ$`Habitat Reaches` `` habitat reaches and `` r sum(nf_dash_summ$`Channel Units` `` channel units and totaling `` r sum(nf_dash_summ$`Length (m)` `` meters in length (Table \@ref(tab:nf-dash-tbl)). Habitat surveys were completed largely within the mainstem North Fork Salmon River, with the exception of Sheep Creek, and were completed using the Drone Assisted Stream Habitat (DASH) protocol [@Carmichael2019]. DASH survey data allow for comparisons of habitat measurements and metrics within the North Fork Salmon River as well as to locations elsewhere where DASH habitat data are available.
+
+```{r nf-dash-tbl}
+nf_dash_tbl = nf_dash_summ %>%
+  kable(booktabs = T,
+        align = "lcccc",
+        caption = "Habitat surveys completed in the North Fork Salmon River using the Drone Assisted Stream Habitat (DASH) protocol (Carmichael et al. 2019) including the number of habitat reaches, channel units, and linear distance surveyed.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+nf_dash_tbl
+
+```
+
+<!--
+Comparisons of fish habitat capacity, both within the NFSR and to watersheds elsewhere where similar data are available, and the fish-habitat relationships derived from those evaluation, are described existing fish habitat conditions, and further, target conditions to relieve capacity limitations. This reach-scale fish habitat assessment will be supported by a literature review of preferred habitat conditions for Chinook salmon and steelhead and fish-habitat relationships derived from available relic datasets. Observations will include: 􀁸 Predictions of capacity at habitat reaches (each \~200m in length) in the NFSR where DASH habitat data are available. 􀁸 Comparisons of relative capacity within the NFSR and to watersheds elsewhere where DASH habitat data are available. Descriptions of fish-habitat relationships derived from capacity evaluations. 􀁸 Descriptions of target habitat condition to relieve habitat capacity limitations, supported by a literature review and available relic fish-habitat relationships.
+-->
+
+## QRF Capacity Comparisons
+
+Violin plots showing the distribution of Chinook capacity estimates for 200 m reaches for watersheds in the Upper Salmon River Basin (or adjacent basins) where Drone Assisted Stream Habitat (DASH) surveys have been conducted. NOTE: There were a variety of motiviations for surveying  habitat sites within these watersheds (reference reach assessment, pre- post- restoration monitoring, etc.). The violon plots should not be interpreted as representative habitat for the entire watershed, and rather an over view of the relative habitat quality that was surveyed within the watershed. 
+
+```{r Dash-compare-chnk, out.width = "100%", fig.cap = "Violin plots showing the distribution of ***Chinook salmon*** capacity estimates for 200 meter reaches for watersheds in the Upper Salmon River basin (or adjacent basins) where DASH surveys have been completed. The violin plots should not be interepreted as representative habitat for the entire watershed, but rather an overview of the relative habitat quality that was DASH surveyed within the watershed."}
+
+# NOTE: These figures were created in the Reference Reach Assessment - CapacityData_prep.R script. 
+knitr::include_graphics("../figures/Wtsd_density_violinplot_chnk_NF_assess.png")
+
+```
+
+```{r Dash-compare-sthd, out.width = "100%", fig.cap = "Violin plots showing the distribution of ***steelhead*** capacity estimates for 200 meter reaches for watersheds in the Upper Salmon River basin (or adjacent basins) where DASH surveys have been completed. The violin plots should not be interepreted as representative habitat for the entire watershed, but rather an overview of the relative habitat quality that was DASH surveyed within the watershed."}
+
+# NOTE: These figures were created in the Reference Reach Assessment - CapacityData_prep.R script. 
+knitr::include_graphics("../figures/Wtsd_density_violinplot_sthd_NF_assess.png")
+
+```
+
+## Habitat Measurements and Metrics
+
+Within each life-stage, the plots are essentially showing the same thing. Consider consolidating to one figure for each life-stage that covers both Chinook salmon and steelhead.
+
+### Juvenile Summer Rearing
+
+```{r Dash-hab-chnk-sum, out.width = "100%", fig.cap = "Violin plots showing the distribution of habitat metrics for habitat reaches with the highest (upper 10% quantile) and lowest (lower 10% quantile) predicted ***juvenile Chinook salmon, summer rearing*** capacity compared to habitat reaches surveyed within the North Fork Salmon River. Habitat data were collected using the DASH protocol (Carmichael et al. 2019) and included surveys from the upper Salmon River subbasin, upper Middle Fork Salmon watershed, upper Secesh watershed, and East Fork Big Lost watershed."}
+
+# NOTE: These figures were created in the Reference Reach Assessment - HabitatData_prep.R script. 
+knitr::include_graphics("../figures/DASH_10UL_chnk_NF_assess_juv_summer.png")
+
+```
+
+```{r Dash-hab-sthd-sum, out.width = "100%", fig.cap = "Violin plots showing the distribution of habitat metrics for habitat reaches with the highest (upper 10% quantile) and lowest (lower 10% quantile) predicted ***juvenile steelhead, summer rearing*** capacity compared to habitat reaches surveyed within the North Fork Salmon River. Habitat data were collected using the DASH protocol (Carmichael et al. 2019) and included surveys from the upper Salmon River subbasin, upper Middle Fork Salmon watershed, upper Secesh watershed, and East Fork Big Lost watershed."}
+
+# NOTE: These figures were created in the Reference Reach Assessment - HabitatData_prep.R script. 
+knitr::include_graphics("../figures/DASH_10UL_sthd_NF_assess_juv_summer.png")
+
+```
+
+### Juvenile Winter Rearing
+
+```{r Dash-hab-chnk-win, out.width = "100%", fig.cap = "Violin plots showing the distribution of habitat metrics for habitat reaches with the highest (upper 10% quantile) and lowest (lower 10% quantile) predicted ***juvenile Chinook salmon, winter rearing*** capacity compared to habitat reaches surveyed within the North Fork Salmon River. Habitat data were collected using the DASH protocol (Carmichael et al. 2019) and included surveys from the upper Salmon River subbasin, upper Middle Fork Salmon watershed, upper Secesh watershed, and East Fork Big Lost watershed."}
+
+# NOTE: These figures were created in the Reference Reach Assessment - HabitatData_prep.R script. 
+knitr::include_graphics("../figures/DASH_10UL_chnk_NF_assess_juv_winter.png")
+
+```
+
+```{r Dash-hab-sthd-win, out.width = "100%", fig.cap = "Violin plots showing the distribution of habitat metrics for habitat reaches with the highest (upper 10% quantile) and lowest (lower 10% quantile) predicted ***juvenile steelhead, winter rearing*** capacity compared to habitat reaches surveyed within the North Fork Salmon River. Habitat data were collected using the DASH protocol (Carmichael et al. 2019) and included surveys from the upper Salmon River subbasin, upper Middle Fork Salmon watershed, upper Secesh watershed, and East Fork Big Lost watershed."}
+
+# NOTE: These figures were created in the Reference Reach Assessment - HabitatData_prep.R script. 
+knitr::include_graphics("../figures/DASH_10UL_sthd_NF_assess_juv_winter.png")
+
+```
+
+### Spawning (Redds)
+
+```{r Dash-hab-chnk-redds, out.width = "100%", fig.cap = "Violin plots showing the distribution of habitat metrics for habitat reaches with the highest (upper 10% quantile) and lowest (lower 10% quantile) predicted ***Chinook salmon redd*** capacity compared to habitat reaches surveyed within the North Fork Salmon River. Habitat data were collected using the DASH protocol (Carmichael et al. 2019) and included surveys from the upper Salmon River subbasin, upper Middle Fork Salmon watershed, upper Secesh watershed, and East Fork Big Lost watershed."}
+
+# NOTE: These figures were created in the Reference Reach Assessment - HabitatData_prep.R script. 
+knitr::include_graphics("../figures/DASH_10UL_chnk_NF_assess_redds.png")
+
+```
+
+```{r Dash-hab-sthd-redds, out.width = "100%", fig.cap = "Violin plots showing the distribution of habitat metrics for habitat reaches with the highest (upper 10% quantile) and lowest (lower 10% quantile) predicted ***steelhead redd*** capacity compared to habitat reaches surveyed within the North Fork Salmon River. Habitat data were collected using the DASH protocol (Carmichael et al. 2019) and included surveys from the upper Salmon River subbasin, upper Middle Fork Salmon watershed, upper Secesh watershed, and East Fork Big Lost watershed."}
+
+# NOTE: These figures were created in the Reference Reach Assessment - HabitatData_prep.R script. 
+knitr::include_graphics("../figures/DASH_10UL_sthd_NF_assess_redds.png")
+
+```
+
+## Fish-Habitat Relationships
+
+# Results and Interpretation
+
+## Limited Species and Life Stages
+
+## Target Conditions to Address Limiting Factors
+
+# Conclusions
 
 # Literature Cited
 
