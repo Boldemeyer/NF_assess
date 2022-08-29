@@ -87,7 +87,6 @@ theme_set(theme_pubr(x.text.angle = 45,
 
 ```
 
-
 # Background
 
 The primary purpose of a North Fork Salmon River Assessment is to develop a restoration plan that provides a strategy for informing the identification, prioritization, and development of high-quality projects to improve instream habitats for salmonids listed under the Endangered Species Act (ESA) and other aquatic species. The assessment is intended to identify habitat limitations and associated geomorphically appropriate restoration recommendations for spawning and rearing life stages of Chinook salmon and steelhead along reaches of the North Fork Salmon River and tributaries encompassing approximately 85 km of stream.
@@ -98,13 +97,13 @@ Rio ASE and Mount Hood Environmental (MHE) personnel have developed a framework 
 
 The focal species for this fish habitat assessment are:
 
-* Snake River spring/summer-run Chinook salmon (*Oncorhynchus tshawytscha*; hereafter Chinook salmon; ESA-listed threatened)
-* Snake River summer-run steelhead (*O. mykiss*; hereafter steelhead; ESA-listed threatened)
+-   Snake River spring/summer-run Chinook salmon (*Oncorhynchus tshawytscha*; hereafter Chinook salmon; ESA-listed threatened)
+-   Snake River summer-run steelhead (*O. mykiss*; hereafter steelhead; ESA-listed threatened)
 
 We assume that actions taken to improve habitat conditions for Chinook salmon and steelhead in the North Fork Salmon River would likely also benefit other salmonids, including:
 
-* bull trout (*Salvelinus confluentus*; ESA-listed threatened)
-* westslope cutthroat trout (*O. clarkii lewisi*)
+-   bull trout (*Salvelinus confluentus*; ESA-listed threatened)
+-   westslope cutthroat trout (*O. clarkii lewisi*)
 
 ## General Approach
 
@@ -113,7 +112,6 @@ A key component for the biological approach is to assess the watershed (populati
 The watershed-scale fish habitat capacity assessment is supplemented by a stream temperature assessment, at least for life-stages that occur during summer months, to identify life-stages or locations where growth or survival of Chinook salmon and steelhead may be limited by summer stream temperatures in the North Fork Salmon River, in addition to physical habitat limitations. The stream temperature assessment leverages data available from NorWeST [@Isaak2017a].
 
 We next provide a reach-scale assessment of fish-habitat conditions in the North Fork Salmon River, by species and life stage, using fish habitat surveys completed in the North Fork Salmon River in 2020 and 2021 and using the Drone-Assisted Stream Habitat [DASH - @Carmichael2019] protocol. Additional details on available data, methods, and analyses are provided below.
-
 
 # Watershed Assessment
 
@@ -175,7 +173,6 @@ NF_redd_df = NF_redd_sf %>%
   as_tibble()
 
 ```
-
 
 ### Required Capacity
 
@@ -399,7 +396,6 @@ rec_goals %>%
 
 ```
 
-
 ### Available Capacity
 
 We define the available habitat capacity as the maximal abundance or load the habitat can support for a given species and life-stage given current habitat quantity and quality. Within fisheries research and management, it has been recognized that biotic and abiotic factors limit productivity within and across life-stages. However, we assume that observed fish density is a poor predictor of habitat capacity due to both a paucity of individuals (i.e., low spawner abundance) and the existence of unmeasured biotic or abiotic variables that may limit capacity. Therefore, available habitat capacity estimates were generated using a QRF framework developed by @See2021.
@@ -407,7 +403,7 @@ We define the available habitat capacity as the maximal abundance or load the ha
 The QRF model is a novel approach to estimate the carrying capacity of wadable stream to support spawning and rearing Chinook salmon and steelhead. The approach involves fitting a QRF [@Meinshausen2006; @Cade2003] to paired fish and habitat data across hundreds of sites in seven watersheds within the Columbia River Basin. Habitat data from the Columbia Habitat Monitoring Program (CHaMP) were paired to juvenile fish and redd survey data to develop fish-habitat relationships [@See2021]. Importantly, the QRF model places no constraints on possible fish-habitat relationships; instead, relationships are estimated from the empirical data regardless of being positive, negative, linear, non-linear, etc. Currently, available QRF models allow evaluation of three anadromous life stages: 1) spawning (redd) capacity, 2) juvenile (parr) summer rearing capacity, and 3) juvenile (presmolt) winter rearing capacity. Using the observed fish-habitat relationships, we can predict habitat capacity at any location with habitat data for model covariates (e.g., at all CHaMP sites) (Table \@ref(tab:cov-tab)). The random forest model produces a distribution of predictions, on for each tree in the forest, and we chose the 90th quantile of that distribution as a proxy for carrying capacity. The QRF models used to estimate available habitat capacity, including data inputs, are described in further detail in Appendix B of @IdahoOSCTeam2019.
 
 ```{r cov-tab}
-load(here("analysis/data/derived_data/QRF_cov_tbl.rda"))
+load(here("analysis/data/raw_data/QRF_new_hab_cov_tbl.rda"))
 
 QRF_new_hab_cov_tbl %>%
   select(-Covariate) %>%
@@ -424,7 +420,7 @@ Although we have hundreds of sites across the Columbia River basin with detailed
 We estimated capacity in the North Fork Salmon River watershed by quantifying the relationships between GAAs and QRF capacity predictions at all of the sites used to populate the QRF model. This was conducted using a second random forest model, with GAAs as covariates and QRF-predicted capacities (linear or areal) as the response variable. The random forest approach allows for non-linear associations between capacity and GAAs, and constricts capacity predictions within the estimated range from the initial QRF model. Density predictions for the North Fork Salmon watershed were calculated for the 200m reach segments using the random forest model within GAA inputs, and reach capacity was calculated by multiplying the predicted fish/m by the length of the reach. Capacity for specific for the mainstem and tributaries were then calculated by summing capacities for each.
 
 ```{r gaa-tbl}
-load(here("analysis/data/derived_data/gaa_hab_dict.rda"))
+load(here("analysis/data/raw_data/gaa_hab_dict.rda"))
 
 gaa_hab_dict %>%
   kable(booktabs = T,
@@ -569,7 +565,7 @@ cap_totals %>%
 
 ```
 
-Maps depicting capacity extrapolations are useful to visualize low- versus high-capacity areas and can inform prioritization efforts. The information used to generate these maps have been exported in geopackage (*.gpkg) file format and are available in the [NF_assess repository](https://github.com/Mount-Hood-Environmental/NF_assess). Chinook salmon and steelhead capacity extrapolations, shown as areal densities, are depicted in Figures \@ref(fig:chnk-maps) and \@ref(fig:sthd-maps), respectively.
+Maps depicting capacity extrapolations are useful to visualize low- versus high-capacity areas and can inform prioritization efforts. The information used to generate these maps have been exported in geopackage (\*.gpkg) file format and are available in the [NF_assess repository](https://github.com/Mount-Hood-Environmental/NF_assess). Chinook salmon and steelhead capacity extrapolations, shown as areal densities, are depicted in Figures \@ref(fig:chnk-maps) and \@ref(fig:sthd-maps), respectively.
 
 ```{r create-chnk-maps}
 # pick a background river color
@@ -898,11 +894,11 @@ availcap_spawners %>%
 
 We used a combination of modeled NorWeST summer stream temperature predictions [@Isaak2017a] for the North Fork Salmon River (Figure \@ref(fig:norwest)) plus life-stage specific temperature thresholds (Table \@ref(tab:temp-thresh)) [@Carter2005] to evaluate whether current or future projected stream temperatures might hinder the ability of Chinook salmon and steelhead to use available habitat during summer months. Three NorWeST temperature scenarios were considered:
 
-* **S2_02_11**: A historical composite scenario representing the 10-year average August mean stream temperatures for 2002-2011.
+-   **S2_02_11**: A historical composite scenario representing the 10-year average August mean stream temperatures for 2002-2011.
 
-* **S30_2040D**: A future August mean stream temperature scenario based on global ensemble average project changes in August air temperature and stream discharge for A1B warming trajectory in the 2040s (2030-2059). Future stream deltas within a NorWeST unit account for differential sensitivity among streams so that cold streams warm less than warm streams.
+-   **S30_2040D**: A future August mean stream temperature scenario based on global ensemble average project changes in August air temperature and stream discharge for A1B warming trajectory in the 2040s (2030-2059). Future stream deltas within a NorWeST unit account for differential sensitivity among streams so that cold streams warm less than warm streams.
 
-* **S32_20840D**: A future August mean stream temperature scenario based on global ensemble average project changes in August air temperature and stream discharge for A1B warming trajectory in the 2080s (2070-2099). Future stream deltas within a NorWeST unit account for differential sensitivity among streams so that cold streams warm less than warm streams.
+-   **S32_20840D**: A future August mean stream temperature scenario based on global ensemble average project changes in August air temperature and stream discharge for A1B warming trajectory in the 2080s (2070-2099). Future stream deltas within a NorWeST unit account for differential sensitivity among streams so that cold streams warm less than warm streams.
 
 ```{r norwest, fig.cap = "Current (S2_02_11) and projected (S30_2040D and S32_2080D) August mean stream temperature scenarios available from NorWest (Isaak et al. 2017) for the North Fork Salmon River."}
 river_color = "lightskyblue1"
@@ -1044,13 +1040,14 @@ nf_dash_tbl
 
 ```
 
+```{=html}
 <!--
 Comparisons of fish habitat capacity, both within the NFSR and to watersheds elsewhere where similar data are available, and the fish-habitat relationships derived from those evaluation, are described existing fish habitat conditions, and further, target conditions to relieve capacity limitations. This reach-scale fish habitat assessment will be supported by a literature review of preferred habitat conditions for Chinook salmon and steelhead and fish-habitat relationships derived from available relic datasets. Observations will include: 􀁸 Predictions of capacity at habitat reaches (each \~200m in length) in the NFSR where DASH habitat data are available. 􀁸 Comparisons of relative capacity within the NFSR and to watersheds elsewhere where DASH habitat data are available. Descriptions of fish-habitat relationships derived from capacity evaluations. 􀁸 Descriptions of target habitat condition to relieve habitat capacity limitations, supported by a literature review and available relic fish-habitat relationships.
 -->
-
+```
 ## QRF Capacity Comparisons
 
-Violin plots showing the distribution of Chinook capacity estimates for 200 m reaches for watersheds in the Upper Salmon River Basin (or adjacent basins) where Drone Assisted Stream Habitat (DASH) surveys have been conducted. NOTE: There were a variety of motiviations for surveying  habitat sites within these watersheds (reference reach assessment, pre- post- restoration monitoring, etc.). The violon plots should not be interpreted as representative habitat for the entire watershed, and rather an over view of the relative habitat quality that was surveyed within the watershed. 
+Violin plots showing the distribution of Chinook capacity estimates for 200 m reaches for watersheds in the Upper Salmon River Basin (or adjacent basins) where Drone Assisted Stream Habitat (DASH) surveys have been conducted. NOTE: There were a variety of motiviations for surveying habitat sites within these watersheds (reference reach assessment, pre- post- restoration monitoring, etc.). The violon plots should not be interpreted as representative habitat for the entire watershed, and rather an over view of the relative habitat quality that was surveyed within the watershed.
 
 ```{r Dash-compare-chnk, out.width = "100%", fig.cap = "Violin plots showing the distribution of ***Chinook salmon*** capacity estimates for 200 meter reaches for watersheds in the Upper Salmon River basin (or adjacent basins) where DASH surveys have been completed. The violin plots should not be interepreted as representative habitat for the entire watershed, but rather an overview of the relative habitat quality that was DASH surveyed within the watershed."}
 
