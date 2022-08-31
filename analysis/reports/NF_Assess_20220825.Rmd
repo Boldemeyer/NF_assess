@@ -1,5 +1,5 @@
 ---
-title: "North Fork Salmon River - Fish Habitat Assessment"
+title: "North Fork Salmon River - Fish Habitat Assessment *PRELIMINARY RESULTS*"
 author:
   - Bryce N. Oldemeyer:
       email: Bryce.Oldemeyer@mounthoodenvironmental.com
@@ -997,6 +997,21 @@ thresh_p = thresh_df %>%
 thresh_p
 
 ```
+```{r temp-dens-map, eval = FALSE, out.width = "100%", fig.cap = "Maps depicting whether current (S2_02_11) and projected (S302040D and S32_2080D) August mean stream temperatures exceed (TRUE) or are below (FALSE) the optimal range for summer life stages of Chinook salmon and steelhead and within the North Fork Salmon River."}
+
+temp_dens_p_chnk_sum = norwest_df %>%
+  ggplot() +
+  geom_vline(xintercept = 14.5) +
+  geom_density(data = norwest_df,
+          aes(x=temp_c,  color=scenario)) +
+    theme_classic() +
+  theme(panel.grid =  element_blank())+
+  labs(x = "Temperature (C)", y = "Density", title = "Chinook")+
+
+temp_dens_p_chnk_sum
+
+```
+
 
 # Reach Assessment
 
