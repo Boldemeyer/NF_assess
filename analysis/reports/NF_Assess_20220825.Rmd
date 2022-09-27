@@ -1284,7 +1284,7 @@ sthd_redd_cap %>%
 
 ## Available vs. Required Capacity Model Predictions
 
-```{r chnk-dens-req-fig, fig.cap = "Comparison of model predictions for available and required habitat capacities."}
+```{r chnk-dens-req-fig, eval=FALSE, fig.cap = "Comparison of model predictions for available and required habitat capacities."}
 chnk_def_line = rec_goals %>%
   select(-Scenario) %>%
   filter(Species == "Chinook",
