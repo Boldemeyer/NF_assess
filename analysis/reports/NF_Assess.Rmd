@@ -133,6 +133,7 @@ load(here("analysis/data/derived_data/NF_spatial.rda"))
 
 # Species domains for the NF salmon manually modified in QGIS with expert knowledge from Jessica Buelow - IDFG
 NF_crs = st_crs(4326) # WGS84
+
 NF_sp_domain_sf = st_read(here("analysis/data/raw_data/NF_sp_Domain.gpkg"), quiet = TRUE) %>%
   st_transform(NF_crs)
 
@@ -146,12 +147,12 @@ NF_HUC12_sf = st_read(here("analysis/data/raw_data/watershed_boundary/HUC12/NFSR
 NF_geo_reach_sf = st_read(here("analysis/data/raw_data/Reaches_delineation/Reaches.shp"), quiet = TRUE) %>%
   st_transform(NF_crs)
 
-# append correct domains 
+# append correct domains & geomorph reach designations
 NF_sum_sf = NF_sum_sf %>%
   rename(chnk_strmnt = chnk,
          sthd_strmnt = sthd) %>%
   left_join(., NF_sp_domain_df %>%
-              select(c("chnk", "sthd","UniqueID")))
+              select(c("chnk", "sthd","UniqueID"))) 
 
 NF_win_sf = NF_win_sf %>%
   rename(chnk_strmnt = chnk,
@@ -1145,6 +1146,241 @@ Chinook redds, steelhead redds, and steelhead summer parr limiting life stages. 
 ## Restoration locations & strategies by geomorphic reaches
 
 Strictly from a fisheries/biological standpoint
+
+
+```{r chnk-geo-reaches}
+
+NF_sum_sf_rch<- NF_sum_sf %>%
+    st_join(NF_geo_reach_sf %>%
+            select(-GNIS_Name)) %>%
+  rename(GNIS_Name_orig = GNIS_Name,
+         GNIS_Name = Reach)
+
+chnk_sum_cap_rch = calc_watershed_cap(NF_huc_sf,
+                                  NF_sum_sf_rch,
+                                  capacity_name = "chnk_per_m",
+                                  capacity_se_name = "chnk_per_m_se",
+                                  by_stream = T) %>%
+  rename(Reach = StreamName) %>%
+  left_join(NF_geo_reach_sf %>%
+              st_drop_geometry())
+
+# Chinook salmon, winter presmolt
+
+NF_win_sf_rch<- NF_win_sf %>%
+    st_join(NF_geo_reach_sf %>%
+            select(-GNIS_Name)) %>%
+  rename(GNIS_Name_orig = GNIS_Name,
+         GNIS_Name = Reach)
+
+chnk_win_cap_rch = calc_watershed_cap(NF_huc_sf,
+                                  NF_win_sf_rch,
+                                  capacity_name = "chnk_per_m",
+                                  capacity_se_name = "chnk_per_m_se",
+                                  by_stream = T) %>%
+  rename(Reach = StreamName) %>%
+  left_join(NF_geo_reach_sf %>%
+              st_drop_geometry())
+
+# Chinook salmon, redds
+
+NF_redd_sf_rch<- NF_redd_sf %>%
+    st_join(NF_geo_reach_sf %>%
+            select(-GNIS_Name)) %>%
+  rename(GNIS_Name_orig = GNIS_Name,
+         GNIS_Name = Reach)
+
+chnk_redd_cap_rch = calc_watershed_cap(NF_huc_sf,
+                                  NF_redd_sf_rch,
+                                  capacity_name = "chnk_per_m",
+                                  capacity_se_name = "chnk_per_m_se",
+                                  by_stream = T) %>%
+  rename(Reach = StreamName) %>%
+  left_join(NF_geo_reach_sf %>%
+              st_drop_geometry())
+
+```
+
+```{r chnk-sum-tbl-georeach}
+chnk_sum_cap_rch %>%
+  drop_na('Reach') %>%
+  mutate(tot_length = tot_length / 1000,
+         'Avg. Capacity/km' = tot_cap/tot_length,
+         'Reach' = replace_na(`Reach`, 'Total')) %>%
+  rename(`# Sub Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se,
+         'Stream Name' = 'GNIS_Name',
+         'Geo Reach' = 'Reach') %>%
+  relocate('Stream Name','Geo Reach','# Sub Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
+  kable(booktabs = T,
+        digits = c(0,0,0,1,0,00),
+        align = "lcccccc",
+        format.args = list(big.mark = ","),
+        caption = "Estimated available habitat for **juvenile summer rearing** Chinook salmon in the North Fork Salmon watershed by geomorphically  delineated reaches.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r chnk-win-tbl-georeach}
+chnk_win_cap_rch %>%
+  drop_na('Reach') %>%
+  mutate(tot_length = tot_length / 1000,
+         'Avg. Capacity/km' = tot_cap/tot_length,
+         'Reach' = replace_na(`Reach`, 'Total')) %>%
+  rename(`# Sub Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se,
+         'Stream Name' = 'GNIS_Name',
+         'Geo Reach' = 'Reach') %>%
+  relocate('Stream Name','Geo Reach','# Sub Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
+  kable(booktabs = T,
+        digits = c(0,0,0,1,0,0),
+        align = "lcccccc",
+        format.args = list(big.mark = ","),
+        caption = "Estimated available habitat for **juvenile winter rearing** Chinook salmon in the North Fork Salmon watershed by geomorphically  delineated reaches.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r chnk-redd-tbl-georeach}
+chnk_redd_cap_rch %>%
+  drop_na('Reach') %>%
+  mutate(tot_length = tot_length / 1000,
+         'Avg. Capacity/km' = tot_cap/tot_length,
+         'Reach' = replace_na(`Reach`, 'Total')) %>%
+  rename(`# Sub Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se,
+         'Stream Name' = 'GNIS_Name',
+         'Geo Reach' = 'Reach') %>%
+  relocate('Stream Name','Geo Reach','# Sub Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
+  kable(booktabs = T,
+        digits = c(0,0,0,1,1,2,1),
+        align = "lcccccc",
+        format.args = list(big.mark = ","),
+        caption = "Estimated available **spawning (redds)** habitat for Chinook salmon in the North Fork Salmon watershed by geomorphically  delineated reaches.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r sthd-geo-reaches}
+
+sthd_sum_cap_rch = calc_watershed_cap(NF_huc_sf,
+                                  NF_sum_sf_rch,
+                                  capacity_name = "sthd_per_m",
+                                  capacity_se_name = "sthd_per_m_se",
+                                  by_stream = T) %>%
+  rename(Reach = StreamName) %>%
+  left_join(NF_geo_reach_sf %>%
+              st_drop_geometry())
+
+# steelhead, winter presmolt
+
+sthd_win_cap_rch = calc_watershed_cap(NF_huc_sf,
+                                  NF_win_sf_rch,
+                                  capacity_name = "sthd_per_m",
+                                  capacity_se_name = "sthd_per_m_se",
+                                  by_stream = T) %>%
+  rename(Reach = StreamName) %>%
+  left_join(NF_geo_reach_sf %>%
+              st_drop_geometry())
+
+# steelhead, redds
+
+sthd_redd_cap_rch = calc_watershed_cap(NF_huc_sf,
+                                  NF_redd_sf_rch,
+                                  capacity_name = "sthd_per_m",
+                                  capacity_se_name = "sthd_per_m_se",
+                                  by_stream = T) %>%
+  rename(Reach = StreamName) %>%
+  left_join(NF_geo_reach_sf %>%
+              st_drop_geometry())
+
+```
+
+```{r sthd-sum-tbl-georeach}
+sthd_sum_cap_rch %>%
+  drop_na('Reach') %>%
+  mutate(tot_length = tot_length / 1000,
+         'Avg. Capacity/km' = tot_cap/tot_length,
+         'Reach' = replace_na(`Reach`, 'Total')) %>%
+  rename(`# Sub Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se,
+         'Stream Name' = 'GNIS_Name',
+         'Geo Reach' = 'Reach') %>%
+  relocate('Stream Name','Geo Reach','# Sub Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
+  kable(booktabs = T,
+        digits = c(0,0,0,1,0,00),
+        align = "lcccccc",
+        format.args = list(big.mark = ","),
+        caption = "Estimated available habitat for **juvenile summer rearing** steelhead in the North Fork Salmon watershed by geomorphically  delineated reaches.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r sthd-win-tbl-georeach}
+sthd_win_cap_rch %>%
+  drop_na('Reach') %>%
+  mutate(tot_length = tot_length / 1000,
+         'Avg. Capacity/km' = tot_cap/tot_length,
+         'Reach' = replace_na(`Reach`, 'Total')) %>%
+  rename(`# Sub Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se,
+         'Stream Name' = 'GNIS_Name',
+         'Geo Reach' = 'Reach') %>%
+  relocate('Stream Name','Geo Reach','# Sub Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
+  kable(booktabs = T,
+        digits = c(0,0,0,1,0,0),
+        align = "lcccccc",
+        format.args = list(big.mark = ","),
+        caption = "Estimated available habitat for **juvenile winter rearing** steelhead in the North Fork Salmon watershed by geomorphically  delineated reaches.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r sthd-redd-tbl-georeach}
+sthd_redd_cap_rch %>%
+  drop_na('Reach') %>%
+  mutate(tot_length = tot_length / 1000,
+         'Avg. Capacity/km' = tot_cap/tot_length,
+         'Reach' = replace_na(`Reach`, 'Total')) %>%
+  rename(`# Sub Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se,
+         'Stream Name' = 'GNIS_Name',
+         'Geo Reach' = 'Reach') %>%
+  relocate('Stream Name','Geo Reach','# Sub Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
+  kable(booktabs = T,
+        digits = c(0,0,0,1,1,2,1),
+        align = "lcccccc",
+        format.args = list(big.mark = ","),
+        caption = "Estimated available **spawning (redds)** habitat for steelhead in the North Fork Salmon watershed by geomorphically  delineated reaches.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+
 
 
 
