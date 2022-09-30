@@ -1163,7 +1163,10 @@ chnk_sum_cap_rch = calc_watershed_cap(NF_huc_sf,
                                   by_stream = T) %>%
   rename(Reach = StreamName) %>%
   left_join(NF_geo_reach_sf %>%
-              st_drop_geometry())
+              st_drop_geometry()) %>%
+  mutate(tot_length = tot_length / 1000,
+         'Avg. Capacity/km' = tot_cap/tot_length,
+         'Reach' = replace_na(`Reach`, 'Total'))
 
 # Chinook salmon, winter presmolt
 
@@ -1180,7 +1183,10 @@ chnk_win_cap_rch = calc_watershed_cap(NF_huc_sf,
                                   by_stream = T) %>%
   rename(Reach = StreamName) %>%
   left_join(NF_geo_reach_sf %>%
-              st_drop_geometry())
+              st_drop_geometry()) %>%
+  mutate(tot_length = tot_length / 1000,
+         'Avg. Capacity/km' = tot_cap/tot_length,
+         'Reach' = replace_na(`Reach`, 'Total'))
 
 # Chinook salmon, redds
 
@@ -1197,16 +1203,101 @@ chnk_redd_cap_rch = calc_watershed_cap(NF_huc_sf,
                                   by_stream = T) %>%
   rename(Reach = StreamName) %>%
   left_join(NF_geo_reach_sf %>%
-              st_drop_geometry())
+              st_drop_geometry()) %>%
+  mutate(tot_length = tot_length / 1000,
+         'Avg. Capacity/km' = tot_cap/tot_length,
+         'Reach' = replace_na(`Reach`, 'Total'))
+
+#### Append the avg cap/km back to geo rch shp for graphing
+
+NF_geo_reach_chnk = NF_geo_reach_sf %>%
+  left_join(chnk_sum_cap_rch %>%
+              select(Reach,'Avg. Capacity/km')) %>%
+  rename(chnk_sum='Avg. Capacity/km') %>%
+  left_join(chnk_win_cap_rch %>%
+              select(Reach,'Avg. Capacity/km')) %>%
+  rename(chnk_win='Avg. Capacity/km')%>%
+  left_join(chnk_redd_cap_rch %>%
+              select(Reach,'Avg. Capacity/km')) %>%
+  rename(chnk_redd='Avg. Capacity/km') %>%
+  st_zm()
 
 ```
 
+```{r create-chnk-maps-georchs}
+# pick a background river color
+river_color = "lightskyblue1"
+
+# chinook summer parr
+chnk_sum_georch = NF_geo_reach_chnk %>%
+  ggplot() +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_geo_reach_chnk,
+          aes(color = chnk_sum),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Chinook, Summer Juveniles",
+       color = expression(`Summer Juv` / km))
+
+# chinook winter presmolts
+chnk_win_georch = NF_geo_reach_chnk %>%
+  ggplot() +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_geo_reach_chnk,
+          aes(color = chnk_win),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Chinook, Winter Juveniles",
+       color = expression(`Winter Juv` / km))
+
+# chinook redds
+chnk_redd_georch = NF_geo_reach_chnk %>%
+  ggplot() +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_geo_reach_chnk,
+          aes(color = chnk_redd),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Chinook, Redds",
+       color = expression(Redds / km))
+    
+
+```
+
+
 ```{r chnk-sum-tbl-georeach}
 chnk_sum_cap_rch %>%
-  drop_na('Reach') %>%
-  mutate(tot_length = tot_length / 1000,
-         'Avg. Capacity/km' = tot_cap/tot_length,
-         'Reach' = replace_na(`Reach`, 'Total')) %>%
+  drop_na('Reach')  %>%
   rename(`# Sub Reaches` = n_rchs,
          `Stream Length (km)` = tot_length,
          Capacity = tot_cap,
@@ -1225,12 +1316,16 @@ chnk_sum_cap_rch %>%
 
 ```
 
+
+```{r chnk-sum-georch-fig, fig.cap = "Average Chinook summar parr (capacity/km) by geomorphic reach for the North Fork Salmon River"}
+chnk_sum_georch
+
+```
+
+
 ```{r chnk-win-tbl-georeach}
 chnk_win_cap_rch %>%
   drop_na('Reach') %>%
-  mutate(tot_length = tot_length / 1000,
-         'Avg. Capacity/km' = tot_cap/tot_length,
-         'Reach' = replace_na(`Reach`, 'Total')) %>%
   rename(`# Sub Reaches` = n_rchs,
          `Stream Length (km)` = tot_length,
          Capacity = tot_cap,
@@ -1249,12 +1344,14 @@ chnk_win_cap_rch %>%
 
 ```
 
+```{r chnk-win-georch-fig, fig.cap = "Average Chinook winter presmolt (capacity/km) by geomorphic reach for the North Fork Salmon River"}
+chnk_win_georch
+
+```
+
 ```{r chnk-redd-tbl-georeach}
 chnk_redd_cap_rch %>%
   drop_na('Reach') %>%
-  mutate(tot_length = tot_length / 1000,
-         'Avg. Capacity/km' = tot_cap/tot_length,
-         'Reach' = replace_na(`Reach`, 'Total')) %>%
   rename(`# Sub Reaches` = n_rchs,
          `Stream Length (km)` = tot_length,
          Capacity = tot_cap,
@@ -1273,6 +1370,12 @@ chnk_redd_cap_rch %>%
 
 ```
 
+```{r chnk-redd-georch-fig, fig.cap = "Average Chinook spawning (redds/km) by geomorphic reach for the North Fork Salmon River"}
+chnk_redd_georch
+
+```
+
+
 ```{r sthd-geo-reaches}
 
 sthd_sum_cap_rch = calc_watershed_cap(NF_huc_sf,
@@ -1282,7 +1385,10 @@ sthd_sum_cap_rch = calc_watershed_cap(NF_huc_sf,
                                   by_stream = T) %>%
   rename(Reach = StreamName) %>%
   left_join(NF_geo_reach_sf %>%
-              st_drop_geometry())
+              st_drop_geometry()) %>%
+  mutate(tot_length = tot_length / 1000,
+         'Avg. Capacity/km' = tot_cap/tot_length,
+         'Reach' = replace_na(`Reach`, 'Total'))
 
 # steelhead, winter presmolt
 
@@ -1293,7 +1399,10 @@ sthd_win_cap_rch = calc_watershed_cap(NF_huc_sf,
                                   by_stream = T) %>%
   rename(Reach = StreamName) %>%
   left_join(NF_geo_reach_sf %>%
-              st_drop_geometry())
+              st_drop_geometry()) %>%
+  mutate(tot_length = tot_length / 1000,
+         'Avg. Capacity/km' = tot_cap/tot_length,
+         'Reach' = replace_na(`Reach`, 'Total'))
 
 # steelhead, redds
 
@@ -1304,16 +1413,100 @@ sthd_redd_cap_rch = calc_watershed_cap(NF_huc_sf,
                                   by_stream = T) %>%
   rename(Reach = StreamName) %>%
   left_join(NF_geo_reach_sf %>%
-              st_drop_geometry())
+              st_drop_geometry()) %>%
+  mutate(tot_length = tot_length / 1000,
+         'Avg. Capacity/km' = tot_cap/tot_length,
+         'Reach' = replace_na(`Reach`, 'Total'))
+
+#### Append the avg cap/km back to geo rch shp for graphing
+
+NF_geo_reach_sthd = NF_geo_reach_sf %>%
+  left_join(sthd_sum_cap_rch %>%
+              select(Reach,'Avg. Capacity/km')) %>%
+  rename(sthd_sum='Avg. Capacity/km') %>%
+  left_join(sthd_win_cap_rch %>%
+              select(Reach,'Avg. Capacity/km')) %>%
+  rename(sthd_win='Avg. Capacity/km')%>%
+  left_join(sthd_redd_cap_rch %>%
+              select(Reach,'Avg. Capacity/km')) %>%
+  rename(sthd_redd='Avg. Capacity/km') %>%
+  st_zm()
+
+```
+
+```{r create-sthd-maps-georchs}
+# pick a background river color
+river_color = "lightskyblue1"
+
+# steelhead summer parr
+sthd_sum_georch = NF_geo_reach_sthd %>%
+  ggplot() +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_geo_reach_sthd,
+          aes(color = sthd_sum),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Steelhead, Summer Juveniles",
+       color = expression(`Summer Juv` / km))
+
+# steelhead winter presmolts
+sthd_win_georch = NF_geo_reach_sthd %>%
+  ggplot() +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_geo_reach_sthd,
+          aes(color = sthd_win),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Steelhead, Winter Juveniles",
+       color = expression(`Winter Juv` / km))
+
+# steelhead redds
+sthd_redd_georch = NF_geo_reach_chnk %>%
+  ggplot() +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_geo_reach_sthd,
+          aes(color = sthd_redd),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  #theme_bw() +
+  theme(legend.position = "bottom",
+        axis.text.x = element_blank(),
+        axis.text.y = element_blank(),
+        axis.ticks = element_blank()) +
+  labs(title = "Steelhead, Redds",
+       color = expression(Redds / km))
+    
 
 ```
 
 ```{r sthd-sum-tbl-georeach}
 sthd_sum_cap_rch %>%
   drop_na('Reach') %>%
-  mutate(tot_length = tot_length / 1000,
-         'Avg. Capacity/km' = tot_cap/tot_length,
-         'Reach' = replace_na(`Reach`, 'Total')) %>%
   rename(`# Sub Reaches` = n_rchs,
          `Stream Length (km)` = tot_length,
          Capacity = tot_cap,
@@ -1332,12 +1525,14 @@ sthd_sum_cap_rch %>%
 
 ```
 
+```{r sthd-sum-georch-fig, fig.cap = "Average steelhead summar parr (capacity/km) by geomorphic reach for the North Fork Salmon River"}
+sthd_sum_georch
+
+```
+
 ```{r sthd-win-tbl-georeach}
 sthd_win_cap_rch %>%
   drop_na('Reach') %>%
-  mutate(tot_length = tot_length / 1000,
-         'Avg. Capacity/km' = tot_cap/tot_length,
-         'Reach' = replace_na(`Reach`, 'Total')) %>%
   rename(`# Sub Reaches` = n_rchs,
          `Stream Length (km)` = tot_length,
          Capacity = tot_cap,
@@ -1356,12 +1551,14 @@ sthd_win_cap_rch %>%
 
 ```
 
+```{r sthd-win-georch-fig, fig.cap = "Average steelhead winter presmolt (capacity/km) by geomorphic reach for the North Fork Salmon River"}
+sthd_win_georch
+
+```
+
 ```{r sthd-redd-tbl-georeach}
 sthd_redd_cap_rch %>%
   drop_na('Reach') %>%
-  mutate(tot_length = tot_length / 1000,
-         'Avg. Capacity/km' = tot_cap/tot_length,
-         'Reach' = replace_na(`Reach`, 'Total')) %>%
   rename(`# Sub Reaches` = n_rchs,
          `Stream Length (km)` = tot_length,
          Capacity = tot_cap,
@@ -1380,7 +1577,10 @@ sthd_redd_cap_rch %>%
 
 ```
 
+```{r sthd-redd-georch-fig, fig.cap = "Average steelhead spawning (redds/km) by geomorphic reach for the North Fork Salmon River"}
+sthd_redd_georch
 
+```
 
 
 
@@ -1605,6 +1805,7 @@ chnk_redd_cap_h12 = calc_watershed_cap(NF_huc_sf,
   rename('HUC12 Name' = Name)
 
 ```
+
 ```{r chnk-sum-tbl-h12}
 chnk_sum_cap_h12 %>%
   subset(!'HUC12 Name' == "Total" | is.na('HUC12 Name')) %>%
