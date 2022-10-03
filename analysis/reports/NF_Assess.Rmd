@@ -81,6 +81,8 @@ library(magrittr)
 library(ggmap)
 library(nngeo)
 library(janitor)
+library(ggspatial)
+library(ggrepel)
 
 theme_set(theme_pubr(x.text.angle = 45,
                      base_size = 8))
@@ -1228,6 +1230,13 @@ NF_geo_reach_chnk = NF_geo_reach_sf %>%
 # pick a background river color
 river_color = "lightskyblue1"
 
+# Need to break up the dataframe for labeling purposes
+NF_geo_rch_label_1 = NF_geo_reach_chnk %>%
+  filter(GNIS_Name =="North Fork Salmon River")
+NF_geo_rch_label_2 = NF_geo_reach_chnk %>%
+  filter(!GNIS_Name == "North Fork Salmon River")
+
+
 # chinook summer parr
 chnk_sum_georch = NF_geo_reach_chnk %>%
   ggplot() +
@@ -1241,11 +1250,18 @@ chnk_sum_georch = NF_geo_reach_chnk %>%
           aes(color = chnk_sum),
           size = 1) +
   scale_color_viridis_c(direction = -1) +
+    geom_label_repel(
+    aes(label = Reach, geometry = geometry),
+    stat = "sf_coordinates",
+    min.segment.length = 0,
+    label.size = NA) +
+  annotation_scale(location = 'br') +
+  
   #theme_bw() +
-  theme(legend.position = "bottom",
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks = element_blank()) +
+  theme(legend.position = "right")
+        #axis.text.x = element_blank(),
+        #axis.text.y = element_blank(),
+        #axis.ticks = element_blank()) +
   labs(title = "Chinook, Summer Juveniles",
        color = expression(`Summer Juv` / km))
 
@@ -1262,6 +1278,12 @@ chnk_win_georch = NF_geo_reach_chnk %>%
           aes(color = chnk_win),
           size = 1) +
   scale_color_viridis_c(direction = -1) +
+  geom_sf_label(aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = 0.008,
+                    nudge_y = 0.009) +
+  
   #theme_bw() +
   theme(legend.position = "bottom",
         axis.text.x = element_blank(),
@@ -1283,6 +1305,8 @@ chnk_redd_georch = NF_geo_reach_chnk %>%
           aes(color = chnk_redd),
           size = 1) +
   scale_color_viridis_c(direction = -1) +
+    geom_sf_text(aes(label = Reach),
+                    size = 2) +
   #theme_bw() +
   theme(legend.position = "bottom",
         axis.text.x = element_blank(),
@@ -1296,7 +1320,8 @@ chnk_redd_georch = NF_geo_reach_chnk %>%
 
 
 ```{r chnk-sum-tbl-georeach}
-chnk_sum_cap_rch %>%
+chnk_sum_cap_rch %>% 
+  subset(!`Reach` == "Total" | is.na(`Reach`)) %>%
   drop_na('Reach')  %>%
   rename(`# Sub Reaches` = n_rchs,
          `Stream Length (km)` = tot_length,
@@ -1305,7 +1330,8 @@ chnk_sum_cap_rch %>%
          'Stream Name' = 'GNIS_Name',
          'Geo Reach' = 'Reach') %>%
   relocate('Stream Name','Geo Reach','# Sub Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
-  kable(booktabs = T,
+  arrange(`Stream Name`) %>%
+kable(booktabs = T,
         digits = c(0,0,0,1,0,00),
         align = "lcccccc",
         format.args = list(big.mark = ","),
@@ -1324,7 +1350,8 @@ chnk_sum_georch
 
 
 ```{r chnk-win-tbl-georeach}
-chnk_win_cap_rch %>%
+chnk_win_cap_rch %>% 
+  subset(!`Reach` == "Total" | is.na(`Reach`)) %>%
   drop_na('Reach') %>%
   rename(`# Sub Reaches` = n_rchs,
          `Stream Length (km)` = tot_length,
@@ -1333,6 +1360,8 @@ chnk_win_cap_rch %>%
          'Stream Name' = 'GNIS_Name',
          'Geo Reach' = 'Reach') %>%
   relocate('Stream Name','Geo Reach','# Sub Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
+  filter(`Geo Reach`!='Total')  %>%
+  arrange(`Stream Name`) %>%
   kable(booktabs = T,
         digits = c(0,0,0,1,0,0),
         align = "lcccccc",
@@ -1350,7 +1379,8 @@ chnk_win_georch
 ```
 
 ```{r chnk-redd-tbl-georeach}
-chnk_redd_cap_rch %>%
+chnk_redd_cap_rch %>% 
+  subset(!`Reach` == "Total" | is.na(`Reach`)) %>%
   drop_na('Reach') %>%
   rename(`# Sub Reaches` = n_rchs,
          `Stream Length (km)` = tot_length,
@@ -1359,6 +1389,8 @@ chnk_redd_cap_rch %>%
          'Stream Name' = 'GNIS_Name',
          'Geo Reach' = 'Reach') %>%
   relocate('Stream Name','Geo Reach','# Sub Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
+  filter(`Geo Reach`!='Total')  %>%
+  arrange(`Stream Name`) %>%
   kable(booktabs = T,
         digits = c(0,0,0,1,1,2,1),
         align = "lcccccc",
@@ -1505,7 +1537,8 @@ sthd_redd_georch = NF_geo_reach_chnk %>%
 ```
 
 ```{r sthd-sum-tbl-georeach}
-sthd_sum_cap_rch %>%
+sthd_sum_cap_rch %>% 
+  subset(!`Reach` == "Total" | is.na(`Reach`)) %>%
   drop_na('Reach') %>%
   rename(`# Sub Reaches` = n_rchs,
          `Stream Length (km)` = tot_length,
@@ -1514,6 +1547,8 @@ sthd_sum_cap_rch %>%
          'Stream Name' = 'GNIS_Name',
          'Geo Reach' = 'Reach') %>%
   relocate('Stream Name','Geo Reach','# Sub Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
+  filter(`Geo Reach`!='Total')  %>%
+  arrange(`Stream Name`) %>%
   kable(booktabs = T,
         digits = c(0,0,0,1,0,00),
         align = "lcccccc",
@@ -1531,7 +1566,8 @@ sthd_sum_georch
 ```
 
 ```{r sthd-win-tbl-georeach}
-sthd_win_cap_rch %>%
+sthd_win_cap_rch %>% 
+  subset(!`Reach` == "Total" | is.na(`Reach`)) %>%
   drop_na('Reach') %>%
   rename(`# Sub Reaches` = n_rchs,
          `Stream Length (km)` = tot_length,
@@ -1540,6 +1576,8 @@ sthd_win_cap_rch %>%
          'Stream Name' = 'GNIS_Name',
          'Geo Reach' = 'Reach') %>%
   relocate('Stream Name','Geo Reach','# Sub Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
+  filter(`Geo Reach`!='Total')  %>%
+  arrange(`Stream Name`) %>%
   kable(booktabs = T,
         digits = c(0,0,0,1,0,0),
         align = "lcccccc",
@@ -1557,7 +1595,8 @@ sthd_win_georch
 ```
 
 ```{r sthd-redd-tbl-georeach}
-sthd_redd_cap_rch %>%
+sthd_redd_cap_rch %>% 
+  subset(!`Reach` == "Total" | is.na(`Reach`)) %>%
   drop_na('Reach') %>%
   rename(`# Sub Reaches` = n_rchs,
          `Stream Length (km)` = tot_length,
@@ -1566,6 +1605,8 @@ sthd_redd_cap_rch %>%
          'Stream Name' = 'GNIS_Name',
          'Geo Reach' = 'Reach') %>%
   relocate('Stream Name','Geo Reach','# Sub Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
+  filter(`Geo Reach`!='Total')  %>%
+  arrange(`Stream Name`) %>%
   kable(booktabs = T,
         digits = c(0,0,0,1,1,2,1),
         align = "lcccccc",
@@ -1625,8 +1666,7 @@ Steelhead - ?
 
 ```{r chnk-sum-tbl-strm}
 chnk_sum_cap %>%
-  subset(!StreamName == "Total" | is.na(StreamName)) %>%
-  adorn_totals() %>%
+  subset(!`StreamName` == "Total" | is.na(`StreamName`)) %>%
   mutate(tot_length = tot_length / 1000) %>%
   rename(`n Reaches` = n_rchs,
          `Stream Length (km)` = tot_length,
@@ -1646,8 +1686,7 @@ chnk_sum_cap %>%
 
 ```{r chnk-win-tbl-strm}
 chnk_win_cap %>%
-  subset(!StreamName == "Total" | is.na(StreamName)) %>%
-  adorn_totals() %>%
+  subset(!`StreamName` == "Total" | is.na(`StreamName`)) %>%
   mutate(tot_length = tot_length / 1000) %>%
   rename(`n Reaches` = n_rchs,
          `Stream Length (km)` = tot_length,
@@ -1667,8 +1706,7 @@ chnk_win_cap %>%
 
 ```{r chnk-redd-tbl-strm}
 chnk_redd_cap %>%
-  subset(!StreamName == "Total" | is.na(StreamName)) %>%
-  adorn_totals() %>%
+  subset(!`StreamName` == "Total" | is.na(`StreamName`)) %>%
   mutate(tot_length = tot_length / 1000) %>%
   rename(`n Reaches` = n_rchs,
          `Stream Length (km)` = tot_length,
@@ -1690,8 +1728,7 @@ chnk_redd_cap %>%
 
 ```{r sthd-sum-tbl-strm}
 sthd_sum_cap %>%
-  subset(!StreamName == "Total" | is.na(StreamName)) %>%
-  adorn_totals() %>%
+  subset(!`StreamName` == "Total" | is.na(`StreamName`)) %>%
   mutate(tot_length = tot_length / 1000) %>%
   rename(`n Reaches` = n_rchs,
          `Stream Length (km)` = tot_length,
@@ -1711,8 +1748,7 @@ sthd_sum_cap %>%
 
 ```{r sthd-win-tbl-strm}
 sthd_win_cap %>%
-  subset(!StreamName == "Total" | is.na(StreamName)) %>%
-  adorn_totals() %>%
+  subset(!`StreamName` == "Total" | is.na(`StreamName`)) %>%
   mutate(tot_length = tot_length / 1000) %>%
   rename(`n Reaches` = n_rchs,
          `Stream Length (km)` = tot_length,
@@ -1733,8 +1769,7 @@ sthd_win_cap %>%
 
 ```{r sthd-redd-tbl-strm}
 sthd_redd_cap %>%
-  subset(!StreamName == "Total" | is.na(StreamName)) %>%
-  adorn_totals() %>%
+  subset(!`StreamName` == "Total" | is.na(`StreamName`)) %>%
   mutate(tot_length = tot_length / 1000) %>%
   rename(`n Reaches` = n_rchs,
          `Stream Length (km)` = tot_length,
@@ -1808,7 +1843,7 @@ chnk_redd_cap_h12 = calc_watershed_cap(NF_huc_sf,
 
 ```{r chnk-sum-tbl-h12}
 chnk_sum_cap_h12 %>%
-  subset(!'HUC12 Name' == "Total" | is.na('HUC12 Name')) %>%
+  subset(!`HUC12` == "Total" | is.na(`HUC12`)) %>%
   mutate(tot_length = tot_length / 1000,
          'Avg. Capacity/km' = tot_cap/tot_length,
          'HUC12 Name' = replace_na(`HUC12 Name`, 'Total')) %>%
@@ -1831,7 +1866,7 @@ chnk_sum_cap_h12 %>%
 
 ```{r chnk-win-tbl-h12}
 chnk_win_cap_h12 %>%
-  subset(!'HUC12 Name' == "Total" | is.na('HUC12 Name')) %>%
+  subset(!`HUC12` == "Total" | is.na(`HUC12`)) %>%
   mutate(tot_length = tot_length / 1000,
          'Avg. Capacity/km' = tot_cap/tot_length,
          'HUC12 Name' = replace_na(`HUC12 Name`, 'Total')) %>%
@@ -1854,7 +1889,7 @@ chnk_win_cap_h12 %>%
 
 ```{r chnk-redd-tbl-h12}
 chnk_redd_cap_h12 %>%
-  subset(!'HUC12 Name' == "Total" | is.na('HUC12 Name')) %>%
+  subset(!`HUC12` == "Total" | is.na(`HUC12`)) %>%
   mutate(tot_length = tot_length / 1000,
          'Avg. Capacity/km' = tot_cap/tot_length,
          'HUC12 Name' = replace_na(`HUC12 Name`, 'Total')) %>%
@@ -1918,7 +1953,7 @@ sthd_redd_cap_h12 = calc_watershed_cap(NF_huc_sf,
 
 ```{r sthd-sum-tbl-h12}
 sthd_sum_cap_h12 %>%
-  subset(!'HUC12 Name' == "Total" | is.na('HUC12 Name')) %>%
+  subset(!`HUC12` == "Total" | is.na(`HUC12`)) %>%
   mutate(tot_length = tot_length / 1000,
          'Avg. Capacity/km' = tot_cap/tot_length,
          'HUC12 Name' = replace_na(`HUC12 Name`, 'Total')) %>%
@@ -1941,7 +1976,7 @@ sthd_sum_cap_h12 %>%
 
 ```{r sthd-win-tbl-h12}
 sthd_win_cap_h12 %>%
-  subset(!'HUC12 Name' == "Total" | is.na('HUC12 Name')) %>%
+  subset(!`HUC12` == "Total" | is.na(`HUC12`)) %>%
   mutate(tot_length = tot_length / 1000,
          'Avg. Capacity/km' = tot_cap/tot_length,
          'HUC12 Name' = replace_na(`HUC12 Name`, 'Total')) %>%
@@ -1964,7 +1999,7 @@ sthd_win_cap_h12 %>%
 
 ```{r sthd-redd-tbl-h12}
 sthd_redd_cap_h12 %>%
-  subset(!'HUC12 Name' == "Total" | is.na('HUC12 Name')) %>%
+  subset(!`HUC12` == "Total" | is.na(`HUC12`)) %>%
   mutate(tot_length = tot_length / 1000,
          'Avg. Capacity/km' = tot_cap/tot_length,
          'HUC12 Name' = replace_na(`HUC12 Name`, 'Total')) %>%
