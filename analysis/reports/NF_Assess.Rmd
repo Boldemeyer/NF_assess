@@ -1231,11 +1231,29 @@ NF_geo_reach_chnk = NF_geo_reach_sf %>%
 river_color = "lightskyblue1"
 
 # Need to break up the dataframe for labeling purposes
-NF_geo_rch_label_1 = NF_geo_reach_chnk %>%
-  filter(GNIS_Name =="North Fork Salmon River")
-NF_geo_rch_label_2 = NF_geo_reach_chnk %>%
-  filter(!GNIS_Name == "North Fork Salmon River")
+#NF_geo_rch_label_right = NF_geo_reach_chnk %>%
+#  filter(Reach %in% c("UNF3","UNF2","UNF1","MNF4","LNF1","DC4","HC3","SC3"))
+#NF_geo_rch_label_left = NF_geo_reach_chnk %>%
+#  filter(Reach %in% c("MNF3","MNF2","MNF1"))
+#NF_geo_rch_label_up = NF_geo_reach_chnk %>%
+#  filter(Reach %in% c("TC3","TC2","TC1","HC2","HC1","DC1","DC2","DC3","SC1","SC2","SC4"))
+#NF_geo_rch_label_rtdwn = NF_geo_reach_chnk %>%
+#  filter(Reach %in% c("LNF2"))
 
+NF_geo_rch_label_right = NF_geo_reach_chnk %>%
+  filter(Reach %in% c("LNF1","DC4","UNF1","UNF2","UNF3"))
+NF_geo_rch_label_left = NF_geo_reach_chnk %>%
+  filter(Reach %in% c("MNF2", "MNF3","MNF4"))
+NF_geo_rch_label_up = NF_geo_reach_chnk %>%
+  filter(Reach %in% c("HC1","SC2", "SC4", "DC1","DC2", "TC1","TC2","TC3"))
+NF_geo_rch_label_dwnrt = NF_geo_reach_chnk %>%
+  filter(Reach %in% c("LNF2"))
+NF_geo_rch_label_uprt = NF_geo_reach_chnk %>%
+  filter(Reach %in% c("HC2","SC3","HC3","DC3"))
+NF_geo_rch_label_uplft = NF_geo_reach_chnk %>%
+  filter(Reach %in% c("MNF1"))
+NF_geo_rch_label_dwnlft = NF_geo_reach_chnk %>%
+  filter(Reach %in% c("SC1"))
 
 # chinook summer parr
 chnk_sum_georch = NF_geo_reach_chnk %>%
@@ -1250,20 +1268,54 @@ chnk_sum_georch = NF_geo_reach_chnk %>%
           aes(color = chnk_sum),
           size = 1) +
   scale_color_viridis_c(direction = -1) +
-    geom_label_repel(
-    aes(label = Reach, geometry = geometry),
-    stat = "sf_coordinates",
-    min.segment.length = 0,
-    label.size = NA) +
+  geom_sf_label(data=NF_geo_rch_label_right,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = 0.022) +
+  geom_sf_label(data=NF_geo_rch_label_left,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = -0.022) +
+  geom_sf_label(data=NF_geo_rch_label_up,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_y = 0.012) +
+  geom_sf_label(data=NF_geo_rch_label_dwnrt,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = 0.012,
+                    nudge_y = -0.012) +
+  geom_sf_label(data=NF_geo_rch_label_uprt,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = 0.016,
+                    nudge_y = 0.012) +
+  geom_sf_label(data=NF_geo_rch_label_uplft,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = -0.02,
+                    nudge_y = 0.006)+
+    geom_sf_label(data=NF_geo_rch_label_dwnlft,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = -0.008,
+                    nudge_y = -0.010) +
   annotation_scale(location = 'br') +
   
   #theme_bw() +
-  theme(legend.position = "right")
-        #axis.text.x = element_blank(),
-        #axis.text.y = element_blank(),
+  theme(legend.position = "right",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
         #axis.ticks = element_blank()) +
-  labs(title = "Chinook, Summer Juveniles",
-       color = expression(`Summer Juv` / km))
+  labs(title = "Chinook, summer parr",
+       color = expression(`Avg. capacity`/km))
 
 # chinook winter presmolts
 chnk_win_georch = NF_geo_reach_chnk %>%
@@ -1277,20 +1329,53 @@ chnk_win_georch = NF_geo_reach_chnk %>%
   geom_sf(data = NF_geo_reach_chnk,
           aes(color = chnk_win),
           size = 1) +
-  scale_color_viridis_c(direction = -1) +
-  geom_sf_label(aes(label = Reach),
+  scale_color_viridis_c(direction = -1)  +
+  geom_sf_label(data=NF_geo_rch_label_right,
+                aes(label = Reach),
                     size = 2,
                     alpha = 0.3,
-                    nudge_x = 0.008,
-                    nudge_y = 0.009) +
-  
+                    nudge_x = 0.022) +
+  geom_sf_label(data=NF_geo_rch_label_left,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = -0.022) +
+  geom_sf_label(data=NF_geo_rch_label_up,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_y = 0.012) +
+  geom_sf_label(data=NF_geo_rch_label_dwnrt,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = 0.012,
+                    nudge_y = -0.012) +
+  geom_sf_label(data=NF_geo_rch_label_uprt,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = 0.016,
+                    nudge_y = 0.012) +
+  geom_sf_label(data=NF_geo_rch_label_uplft,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = -0.02,
+                    nudge_y = 0.006)+
+  geom_sf_label(data=NF_geo_rch_label_dwnlft,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = -0.008,
+                    nudge_y = -0.010) +
   #theme_bw() +
-  theme(legend.position = "bottom",
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks = element_blank()) +
-  labs(title = "Chinook, Winter Juveniles",
-       color = expression(`Winter Juv` / km))
+  theme(legend.position = "right",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+        #axis.ticks = element_blank()) +
+  labs(title = "Chinook, winter presmolts",
+       color = expression(`Avg. capacity`/km))
 
 # chinook redds
 chnk_redd_georch = NF_geo_reach_chnk %>%
@@ -1305,15 +1390,52 @@ chnk_redd_georch = NF_geo_reach_chnk %>%
           aes(color = chnk_redd),
           size = 1) +
   scale_color_viridis_c(direction = -1) +
-    geom_sf_text(aes(label = Reach),
-                    size = 2) +
+  geom_sf_label(data=NF_geo_rch_label_right,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = 0.022) +
+  geom_sf_label(data=NF_geo_rch_label_left,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = -0.022) +
+  geom_sf_label(data=NF_geo_rch_label_up,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_y = 0.012) +
+  geom_sf_label(data=NF_geo_rch_label_dwnrt,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = 0.012,
+                    nudge_y = -0.012) +
+  geom_sf_label(data=NF_geo_rch_label_uprt,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = 0.016,
+                    nudge_y = 0.012) +
+  geom_sf_label(data=NF_geo_rch_label_uplft,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = -0.02,
+                    nudge_y = 0.006)+
+  geom_sf_label(data=NF_geo_rch_label_dwnlft,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = -0.008,
+                    nudge_y = -0.010) +
   #theme_bw() +
-  theme(legend.position = "bottom",
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks = element_blank()) +
-  labs(title = "Chinook, Redds",
-       color = expression(Redds / km))
+  theme(legend.position = "right",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+        #axis.ticks = element_blank()) +
+  labs(title = "Chinook, spawning (redds)",
+       color = expression(`Avg. capacity`/km))
     
 
 ```
@@ -1483,13 +1605,52 @@ sthd_sum_georch = NF_geo_reach_sthd %>%
           aes(color = sthd_sum),
           size = 1) +
   scale_color_viridis_c(direction = -1) +
+  geom_sf_label(data=NF_geo_rch_label_right,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = 0.022) +
+  geom_sf_label(data=NF_geo_rch_label_left,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = -0.022) +
+  geom_sf_label(data=NF_geo_rch_label_up,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_y = 0.012) +
+  geom_sf_label(data=NF_geo_rch_label_dwnrt,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = 0.012,
+                    nudge_y = -0.012) +
+  geom_sf_label(data=NF_geo_rch_label_uprt,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = 0.016,
+                    nudge_y = 0.012) +
+  geom_sf_label(data=NF_geo_rch_label_uplft,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = -0.02,
+                    nudge_y = 0.006)+
+  geom_sf_label(data=NF_geo_rch_label_dwnlft,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = -0.008,
+                    nudge_y = -0.010) +
   #theme_bw() +
-  theme(legend.position = "bottom",
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks = element_blank()) +
-  labs(title = "Steelhead, Summer Juveniles",
-       color = expression(`Summer Juv` / km))
+ theme(legend.position = "right",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+        #axis.ticks = element_blank()) +
+  labs(title = "Steelhead, summer parr",
+       color = expression(`Avg. capacity`/km))
 
 # steelhead winter presmolts
 sthd_win_georch = NF_geo_reach_sthd %>%
@@ -1503,14 +1664,53 @@ sthd_win_georch = NF_geo_reach_sthd %>%
   geom_sf(data = NF_geo_reach_sthd,
           aes(color = sthd_win),
           size = 1) +
-  scale_color_viridis_c(direction = -1) +
+  scale_color_viridis_c(direction = -1)  +
+  geom_sf_label(data=NF_geo_rch_label_right,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = 0.022) +
+  geom_sf_label(data=NF_geo_rch_label_left,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = -0.022) +
+  geom_sf_label(data=NF_geo_rch_label_up,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_y = 0.012) +
+  geom_sf_label(data=NF_geo_rch_label_dwnrt,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = 0.012,
+                    nudge_y = -0.012) +
+  geom_sf_label(data=NF_geo_rch_label_uprt,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = 0.016,
+                    nudge_y = 0.012) +
+  geom_sf_label(data=NF_geo_rch_label_uplft,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = -0.02,
+                    nudge_y = 0.006)+
+  geom_sf_label(data=NF_geo_rch_label_dwnlft,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = -0.008,
+                    nudge_y = -0.010) +
   #theme_bw() +
-  theme(legend.position = "bottom",
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks = element_blank()) +
-  labs(title = "Steelhead, Winter Juveniles",
-       color = expression(`Winter Juv` / km))
+  theme(legend.position = "right",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+        #axis.ticks = element_blank()) +
+  labs(title = "Steelhead, winter presmolts",
+       color = expression(`Avg. capacity`/km))
 
 # steelhead redds
 sthd_redd_georch = NF_geo_reach_chnk %>%
@@ -1526,12 +1726,51 @@ sthd_redd_georch = NF_geo_reach_chnk %>%
           size = 1) +
   scale_color_viridis_c(direction = -1) +
   #theme_bw() +
-  theme(legend.position = "bottom",
-        axis.text.x = element_blank(),
-        axis.text.y = element_blank(),
-        axis.ticks = element_blank()) +
-  labs(title = "Steelhead, Redds",
-       color = expression(Redds / km))
+  theme(legend.position = "right",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank())  +
+  geom_sf_label(data=NF_geo_rch_label_right,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = 0.022) +
+  geom_sf_label(data=NF_geo_rch_label_left,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = -0.022) +
+  geom_sf_label(data=NF_geo_rch_label_up,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_y = 0.012) +
+  geom_sf_label(data=NF_geo_rch_label_dwnrt,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = 0.012,
+                    nudge_y = -0.012) +
+  geom_sf_label(data=NF_geo_rch_label_uprt,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = 0.016,
+                    nudge_y = 0.012) +
+  geom_sf_label(data=NF_geo_rch_label_uplft,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = -0.02,
+                    nudge_y = 0.006)+
+  geom_sf_label(data=NF_geo_rch_label_dwnlft,
+                aes(label = Reach),
+                    size = 2,
+                    alpha = 0.3,
+                    nudge_x = -0.008,
+                    nudge_y = -0.010) +
+        #axis.ticks = element_blank()) +
+  labs(title = "Steelhead, spawning (redds)",
+       color = expression(`Avg. capacity`/km))
     
 
 ```
