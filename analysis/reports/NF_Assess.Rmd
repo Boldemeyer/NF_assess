@@ -1037,7 +1037,7 @@ nf_dash_summ = dash_df %>%
                           "Miller 2021",
                           "Murphy",
                           "NF Reference",
-                          "Sheep Cr",
+                          "Sheep Creek",
                           "Thomas",
                           "Upper NF")) %>%
   group_by(site_name) %>%
@@ -1145,6 +1145,544 @@ knitr::include_graphics("../figures/DASH_10UL_sthd_NF_assess_redds.png")
 
 Chinook redds, steelhead redds, and steelhead summer parr limiting life stages. Improve low capacity habitat for redds further upstream, juveniles habitat below. Improve connectivity. Add details and discuss further.
 
+## Restoration locations & strategies by HUC12
+
+### Chinook HUC12
+
+```{r calc-chnk-capacity-h12}
+NF_sum_sf_h12<- NF_sum_sf %>%
+  rename(GNIS_Name_orig = GNIS_Name,
+         GNIS_Name = HUC12)
+
+chnk_sum_cap_h12 = calc_watershed_cap(NF_huc_sf,
+                                  NF_sum_sf_h12,
+                                  capacity_name = "chnk_per_m",
+                                  capacity_se_name = "chnk_per_m_se",
+                                  by_stream = T) %>%
+  rename(HUC12 = StreamName) %>%
+  left_join(NF_HUC12_sf %>%
+              select(Name, HUC12) %>%
+              st_drop_geometry()) %>%
+  rename('HUC12 Name' = Name) %>%
+  mutate(tot_length = tot_length / 1000,
+         'Avg. Capacity/km' = tot_cap/tot_length)
+  
+
+# Chinook salmon, winter presmolt
+
+NF_win_sf_h12<- NF_win_sf %>%
+  rename(GNIS_Name_orig = GNIS_Name,
+         GNIS_Name = HUC12)
+
+chnk_win_cap_h12 = calc_watershed_cap(NF_huc_sf,
+                                  NF_win_sf_h12,
+                                  capacity_name = "chnk_per_m",
+                                  capacity_se_name = "chnk_per_m_se",
+                                  by_stream = T)%>%
+  rename(HUC12 = StreamName) %>%
+  left_join(NF_HUC12_sf %>%
+              select(Name, HUC12) %>%
+              st_drop_geometry()) %>%
+  rename('HUC12 Name' = Name) %>%
+  mutate(tot_length = tot_length / 1000,
+         'Avg. Capacity/km' = tot_cap/tot_length)
+
+# Chinook salmon, redds
+
+NF_redd_sf_h12<- NF_redd_sf %>%
+  rename(GNIS_Name_orig = GNIS_Name,
+         GNIS_Name = HUC12)
+
+chnk_redd_cap_h12 = calc_watershed_cap(NF_huc_sf,
+                                   NF_redd_sf_h12,
+                                   capacity_name = "chnk_per_m",
+                                   capacity_se_name = "chnk_per_m_se",
+                                   by_stream = T)%>%
+  rename(HUC12 = StreamName) %>%
+  left_join(NF_HUC12_sf %>%
+              select(Name, HUC12) %>%
+              st_drop_geometry()) %>%
+  rename('HUC12 Name' = Name) %>%
+  mutate(tot_length = tot_length / 1000,
+         'Avg. Capacity/km' = tot_cap/tot_length)
+
+#### Append the avg cap/km back to HUC12 shp for graphing
+
+NF_sum_sf  = NF_sum_sf %>%
+  left_join(chnk_sum_cap_h12 %>%
+              select(HUC12,'Avg. Capacity/km')) %>%
+  rename(chnk_sum_h12_avcap='Avg. Capacity/km')
+
+NF_win_sf  = NF_win_sf %>%
+  left_join(chnk_win_cap_h12 %>%
+              select(HUC12,'Avg. Capacity/km')) %>%
+  rename(chnk_win_h12_avcap='Avg. Capacity/km')
+
+NF_redd_sf  = NF_redd_sf %>%
+  left_join(chnk_redd_cap_h12 %>%
+              select(HUC12,'Avg. Capacity/km')) %>%
+  rename(chnk_redd_h12_avcap='Avg. Capacity/km')
+
+
+```
+
+```{r create-chnk-maps-HUC12}
+# pick a background river color
+river_color = "lightskyblue1"
+
+
+label_loc<- data.frame(c(-113.97,-114.01,-114.05,-114.06,-113.82,-113.87),
+                       c(45.69, 45.57, 45.45, 45.545, 45.50, 45.60),
+                       c("Upper NFSR","Middle NFSR","Lower NFSR","Hughes Creek","Sheep Creek", "Dahlonega Creek")) 
+
+colnames(label_loc)<-c("X","Y","H12")
+
+# chinook summer parr
+chnk_sum_HUC12 = NF_sum_sf %>%
+  ggplot() +
+  geom_sf(data = NF_HUC12_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_HUC12_sf,
+          size = 0.5) +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_sum_sf %>%
+            filter(chnk),
+          aes(color = chnk_sum_h12_avcap),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  geom_label(data = label_loc, aes(X, Y, label = H12),
+            color = "black",
+            size = 3) +
+  annotation_scale(location = 'br') +
+  #theme_bw() +
+  theme(legend.position = "right",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+        #axis.ticks = element_blank()) +
+  labs(title = "Chinook, summer parr - HUC12",
+       color = expression(`Avg. capacity`/km))
+
+
+# chinook winter presmolts 
+chnk_win_HUC12 = NF_win_sf %>%
+  ggplot() +
+  geom_sf(data = NF_HUC12_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_HUC12_sf,
+          size = 0.5) +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_win_sf %>%
+            filter(chnk),
+          aes(color = chnk_win_h12_avcap),
+          size = 1) +
+  scale_color_viridis_c(direction = -1)  +
+  geom_label(data = label_loc, aes(X, Y, label = H12),
+            color = "black",
+            size = 3) +
+  annotation_scale(location = 'br') +
+
+  #theme_bw() +
+  theme(legend.position = "right",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+        #axis.ticks = element_blank()) +
+  labs(title = "Chinook, winter presmolts - HUC12",
+       color = expression(`Avg. capacity`/km))
+
+# chinook redds
+chnk_redd_HUC12 = NF_redd_sf %>%
+  ggplot() +
+  geom_sf(data = NF_HUC12_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_HUC12_sf,
+          size = 0.5) +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_redd_sf %>%
+            filter(chnk),
+          aes(color = chnk_redd_h12_avcap),
+          size = 1) +
+  scale_color_viridis_c(direction = -1)  +
+  geom_label(data = label_loc, aes(X, Y, label = H12),
+            color = "black",
+            size = 3) +
+  annotation_scale(location = 'br') +
+
+  #theme_bw() +
+  theme(legend.position = "right",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+        #axis.ticks = element_blank()) +
+  labs(title = "Chinook, spawning (redds) - HUC12",
+       color = expression(`Avg. capacity`/km))
+    
+```
+
+
+
+
+```{r chnk-sum-tbl-h12}
+chnk_sum_cap_h12 %>%
+  subset(!`HUC12` == "Total" | is.na(`HUC12`)) %>%
+  rename(`Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se) %>%
+    select(-HUC12) %>%
+  relocate('HUC12 Name','Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0,0),
+        align = "lccccc",
+        format.args = list(big.mark = ","),
+        caption = "Estimated available habitat for **juvenile summer rearing** Chinook salmon in the North Fork Salmon watershed by HUC12 delineation.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r chnk-sum-h12-fig, fig.cap = "Average Chinook summar parr (capacity/km) by HUC12 delineation for the North Fork Salmon River watershed."}
+chnk_sum_HUC12
+
+```
+
+
+```{r chnk-win-tbl-h12}
+chnk_win_cap_h12 %>%
+  subset(!`HUC12` == "Total" | is.na(`HUC12`)) %>%
+  rename(`Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se) %>%
+    select(-HUC12) %>%
+  relocate('HUC12 Name','Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0,0),
+        align = "lccccc",
+        format.args = list(big.mark = ","),
+        caption = "Estimated available habitat for **juvenile winter rearing** Chinook salmon in the North Fork Salmon watershed by HUC12 delineation.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r chnk-win-h12-fig, fig.cap = "Average Chinook winter presmolt (capacity/km) by HUC12 delineation for the North Fork Salmon River watershed."}
+chnk_win_HUC12
+
+```
+
+
+```{r chnk-redd-tbl-h12}
+chnk_redd_cap_h12 %>%
+  subset(!`HUC12` == "Total" | is.na(`HUC12`)) %>%
+  rename(`Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se) %>%
+    select(-HUC12) %>%
+  relocate('HUC12 Name','Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,1,2,1),
+        align = "lccccc",
+        format.args = list(big.mark = ","),
+        caption = "Estimated available **spawning (redds)** habitat for Chinook salmon in the North Fork Salmon watershed by HUC12 delineation.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r chnk-redd-h12-fig, fig.cap = "Average Chinook spawning (redds/km) by HUC12 delineation for the North Fork Salmon River watershed."}
+chnk_redd_HUC12
+
+```
+
+
+### Steelhead HUC12
+
+```{r calc-sthd-capacity-h12}
+# steelhead, summer parr
+sthd_sum_cap_h12 = calc_watershed_cap(NF_huc_sf,
+                                  NF_sum_sf_h12,
+                                  capacity_name = "sthd_per_m",
+                                  capacity_se_name = "sthd_per_m_se",
+                                  by_stream = T)%>%
+  rename(HUC12 = StreamName) %>%
+  left_join(NF_HUC12_sf %>%
+              select(Name, HUC12) %>%
+              st_drop_geometry()) %>%
+  rename('HUC12 Name' = Name) %>%
+  mutate(tot_length = tot_length / 1000,
+         'Avg. Capacity/km' = tot_cap/tot_length)
+
+# steelhead, winter presmolt
+sthd_win_cap_h12 = calc_watershed_cap(NF_huc_sf,
+                                  NF_win_sf_h12,
+                                  capacity_name = "sthd_per_m",
+                                  capacity_se_name = "sthd_per_m_se",
+                                  by_stream = T)%>%
+  rename(HUC12 = StreamName) %>%
+  left_join(NF_HUC12_sf %>%
+              select(Name, HUC12) %>%
+              st_drop_geometry()) %>%
+  rename('HUC12 Name' = Name) %>%
+  mutate(tot_length = tot_length / 1000,
+         'Avg. Capacity/km' = tot_cap/tot_length)
+
+
+# steelhead, redds
+sthd_redd_cap_h12 = calc_watershed_cap(NF_huc_sf,
+                                   NF_redd_sf_h12,
+                                   capacity_name = "sthd_per_m",
+                                   capacity_se_name = "sthd_per_m_se",
+                                   by_stream = T)%>%
+  rename(HUC12 = StreamName) %>%
+  left_join(NF_HUC12_sf %>%
+              select(Name, HUC12) %>%
+              st_drop_geometry()) %>%
+  rename('HUC12 Name' = Name) %>%
+  mutate(tot_length = tot_length / 1000,
+         'Avg. Capacity/km' = tot_cap/tot_length)
+
+
+#### Append the avg cap/km back to HUC12 shp for graphing
+
+NF_sum_sf  = NF_sum_sf %>%
+  left_join(sthd_sum_cap_h12 %>%
+              select(HUC12,'Avg. Capacity/km')) %>%
+  rename(sthd_sum_h12_avcap='Avg. Capacity/km')
+
+NF_win_sf  = NF_win_sf %>%
+  left_join(sthd_win_cap_h12 %>%
+              select(HUC12,'Avg. Capacity/km')) %>%
+  rename(sthd_win_h12_avcap='Avg. Capacity/km')
+
+NF_redd_sf  = NF_redd_sf %>%
+  left_join(sthd_redd_cap_h12 %>%
+              select(HUC12,'Avg. Capacity/km')) %>%
+  rename(sthd_redd_h12_avcap='Avg. Capacity/km')
+
+```
+
+```{r create-sthd-maps-HUC12}
+# pick a background river color
+river_color = "lightskyblue1"
+
+# steelhead summer parr
+sthd_sum_HUC12 = NF_sum_sf %>%
+  ggplot() +
+  geom_sf(data = NF_HUC12_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_HUC12_sf,
+          size = 0.5) +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_sum_sf %>%
+            filter(sthd),
+          aes(color = sthd_sum_h12_avcap),
+          size = 1) +
+  scale_color_viridis_c(direction = -1) +
+  geom_label(data = label_loc, aes(X, Y, label = H12),
+            color = "black",
+            size = 3) +
+  annotation_scale(location = 'br') +
+
+  #theme_bw() +
+  theme(legend.position = "right",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+        #axis.ticks = element_blank()) +
+  labs(title = "Steelhead, summer parr - HUC12",
+       color = expression(`Avg. capacity`/km))
+
+
+# steelhead winter presmolts 
+sthd_win_HUC12 = NF_win_sf %>%
+  ggplot() +
+  geom_sf(data = NF_HUC12_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_HUC12_sf,
+          size = 0.5) +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_win_sf %>%
+            filter(sthd),
+          aes(color = sthd_win_h12_avcap),
+          size = 1) +
+  scale_color_viridis_c(direction = -1)  +
+  geom_label(data = label_loc, aes(X, Y, label = H12),
+            color = "black",
+            size = 3) +
+  annotation_scale(location = 'br') +
+  #theme_bw() +
+  theme(legend.position = "right",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+        #axis.ticks = element_blank()) +
+  labs(title = "Steelhead, winter presmolts - HUC12",
+       color = expression(`Avg. capacity`/km))
+
+# steelhead redds
+sthd_redd_HUC12 = NF_redd_sf %>%
+  ggplot() +
+  geom_sf(data = NF_HUC12_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_HUC12_sf,
+          size = 0.5) +
+  geom_sf(data = NF_huc_sf %>%
+            st_union() %>%
+            nngeo::st_remove_holes(),
+          fill = NA,
+          color = "gray50") +
+  geom_sf(color = river_color) +
+  geom_sf(data = NF_redd_sf %>%
+            filter(sthd),
+          aes(color = sthd_redd_h12_avcap),
+          size = 1) +
+  scale_color_viridis_c(direction = -1)  +
+  geom_label(data = label_loc, aes(X, Y, label = H12),
+            color = "black",
+            size = 3) +
+  annotation_scale(location = 'br') +
+  #theme_bw() +
+  theme(legend.position = "right",
+        axis.title.x = element_blank(),
+        axis.title.y = element_blank()) +
+        #axis.ticks = element_blank()) +
+  labs(title = "Steelhead, spawning (redds) - HUC12",
+       color = expression(`Avg. capacity`/km))
+    
+```
+
+
+
+
+
+```{r sthd-sum-tbl-h12}
+sthd_sum_cap_h12 %>%
+  subset(!`HUC12` == "Total" | is.na(`HUC12`)) %>%
+  rename(`Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se) %>%
+    select(-HUC12) %>%
+  relocate('HUC12 Name','Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0,0),
+        align = "lccccc",
+        format.args = list(big.mark = ","),
+        caption = "Estimated available habitat for **juvenile summer rearing** steelhead in the North Fork Salmon watershed by HUC12 delineation.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r sthd-sum-h12-fig, fig.cap = "Average steelhead summer parr (capacity/km) by HUC12 delineation for the North Fork Salmon River watershed."}
+
+sthd_sum_HUC12
+
+```
+
+```{r sthd-win-tbl-h12}
+sthd_win_cap_h12 %>%
+  subset(!`HUC12` == "Total" | is.na(`HUC12`)) %>%
+  rename(`Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se) %>%
+    select(-HUC12) %>%
+  relocate('HUC12 Name','Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,0,0,0),
+        align = "lccccc",
+        format.args = list(big.mark = ","),
+        caption = "Estimated available habitat for **juvenile winter rearing** steelhead in the North Fork Salmon watershed by HUC12 delineation.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r sthd-win-h12-fig, fig.cap = "Average steelhead winter presmolt (capacity/km) by HUC12 delineation for the North Fork Salmon River watershed."}
+
+sthd_win_HUC12
+
+```
+
+```{r sthd-redd-tbl-h12}
+sthd_redd_cap_h12 %>%
+  subset(!`HUC12` == "Total" | is.na(`HUC12`)) %>%
+  rename(`Reaches` = n_rchs,
+         `Stream Length (km)` = tot_length,
+         Capacity = tot_cap,
+         `Capacity SE` = tot_cap_se) %>%
+    select(-HUC12) %>%
+  relocate('HUC12 Name','Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
+  kable(booktabs = T,
+        digits = c(0,0,1,1,2,1),
+        align = "lccccc",
+        format.args = list(big.mark = ","),
+        caption = "Estimated available **spawning (redds)** habitat for steelhead in the North Fork Salmon watershed by HUC12 delineation.") %>%
+  kable_styling(full_width = F,
+                position = "center",
+                bootstrap_options = c("striped", "condensed"))
+
+```
+
+```{r sthd-redd-h12-fig, fig.cap = "Average steelhead spawning (redds/km) by HUC12 delineation for the North Fork Salmon River watershed."}
+
+sthd_redd_HUC12
+
+```
+
 ## Restoration locations & strategies by geomorphic reaches
 
 Strictly from a fisheries/biological standpoint
@@ -1229,16 +1767,6 @@ NF_geo_reach_chnk = NF_geo_reach_sf %>%
 ```{r create-chnk-maps-georchs}
 # pick a background river color
 river_color = "lightskyblue1"
-
-# Need to break up the dataframe for labeling purposes
-#NF_geo_rch_label_right = NF_geo_reach_chnk %>%
-#  filter(Reach %in% c("UNF3","UNF2","UNF1","MNF4","LNF1","DC4","HC3","SC3"))
-#NF_geo_rch_label_left = NF_geo_reach_chnk %>%
-#  filter(Reach %in% c("MNF3","MNF2","MNF1"))
-#NF_geo_rch_label_up = NF_geo_reach_chnk %>%
-#  filter(Reach %in% c("TC3","TC2","TC1","HC2","HC1","DC1","DC2","DC3","SC1","SC2","SC4"))
-#NF_geo_rch_label_rtdwn = NF_geo_reach_chnk %>%
-#  filter(Reach %in% c("LNF2"))
 
 NF_geo_rch_label_right = NF_geo_reach_chnk %>%
   filter(Reach %in% c("LNF1","DC4","UNF1","UNF2","UNF3"))
@@ -1369,6 +1897,8 @@ chnk_win_georch = NF_geo_reach_chnk %>%
                     alpha = 0.3,
                     nudge_x = -0.008,
                     nudge_y = -0.010) +
+    annotation_scale(location = 'br') +
+
   #theme_bw() +
   theme(legend.position = "right",
         axis.title.x = element_blank(),
@@ -1429,6 +1959,8 @@ chnk_redd_georch = NF_geo_reach_chnk %>%
                     alpha = 0.3,
                     nudge_x = -0.008,
                     nudge_y = -0.010) +
+    annotation_scale(location = 'br') +
+
   #theme_bw() +
   theme(legend.position = "right",
         axis.title.x = element_blank(),
@@ -1644,6 +2176,8 @@ sthd_sum_georch = NF_geo_reach_sthd %>%
                     alpha = 0.3,
                     nudge_x = -0.008,
                     nudge_y = -0.010) +
+    annotation_scale(location = 'br') +
+
   #theme_bw() +
  theme(legend.position = "right",
         axis.title.x = element_blank(),
@@ -1704,6 +2238,8 @@ sthd_win_georch = NF_geo_reach_sthd %>%
                     alpha = 0.3,
                     nudge_x = -0.008,
                     nudge_y = -0.010) +
+    annotation_scale(location = 'br') +
+
   #theme_bw() +
   theme(legend.position = "right",
         axis.title.x = element_blank(),
@@ -1768,6 +2304,8 @@ sthd_redd_georch = NF_geo_reach_chnk %>%
                     alpha = 0.3,
                     nudge_x = -0.008,
                     nudge_y = -0.010) +
+    annotation_scale(location = 'br') +
+
         #axis.ticks = element_blank()) +
   labs(title = "Steelhead, spawning (redds)",
        color = expression(`Avg. capacity`/km))
@@ -2025,241 +2563,6 @@ sthd_redd_cap %>%
                 bootstrap_options = c("striped", "condensed"))
 
 ```
-
-### Chinook Salmon HUC12
-
-```{r calc-chnk-capacity-h12}
-NF_sum_sf_h12<- NF_sum_sf %>%
-  rename(GNIS_Name_orig = GNIS_Name,
-         GNIS_Name = HUC12)
-
-chnk_sum_cap_h12 = calc_watershed_cap(NF_huc_sf,
-                                  NF_sum_sf_h12,
-                                  capacity_name = "chnk_per_m",
-                                  capacity_se_name = "chnk_per_m_se",
-                                  by_stream = T) %>%
-  rename(HUC12 = StreamName) %>%
-  left_join(NF_HUC12_sf %>%
-              select(Name, HUC12) %>%
-              st_drop_geometry()) %>%
-  rename('HUC12 Name' = Name)
-
-# Chinook salmon, winter presmolt
-
-NF_win_sf_h12<- NF_win_sf %>%
-  rename(GNIS_Name_orig = GNIS_Name,
-         GNIS_Name = HUC12)
-
-chnk_win_cap_h12 = calc_watershed_cap(NF_huc_sf,
-                                  NF_win_sf_h12,
-                                  capacity_name = "chnk_per_m",
-                                  capacity_se_name = "chnk_per_m_se",
-                                  by_stream = T)%>%
-  rename(HUC12 = StreamName) %>%
-  left_join(NF_HUC12_sf %>%
-              select(Name, HUC12) %>%
-              st_drop_geometry()) %>%
-  rename('HUC12 Name' = Name)
-
-# Chinook salmon, redds
-
-NF_redd_sf_h12<- NF_redd_sf %>%
-  rename(GNIS_Name_orig = GNIS_Name,
-         GNIS_Name = HUC12)
-
-chnk_redd_cap_h12 = calc_watershed_cap(NF_huc_sf,
-                                   NF_redd_sf_h12,
-                                   capacity_name = "chnk_per_m",
-                                   capacity_se_name = "chnk_per_m_se",
-                                   by_stream = T)%>%
-  rename(HUC12 = StreamName) %>%
-  left_join(NF_HUC12_sf %>%
-              select(Name, HUC12) %>%
-              st_drop_geometry()) %>%
-  rename('HUC12 Name' = Name)
-
-```
-
-```{r chnk-sum-tbl-h12}
-chnk_sum_cap_h12 %>%
-  subset(!`HUC12` == "Total" | is.na(`HUC12`)) %>%
-  mutate(tot_length = tot_length / 1000,
-         'Avg. Capacity/km' = tot_cap/tot_length,
-         'HUC12 Name' = replace_na(`HUC12 Name`, 'Total')) %>%
-  rename(`Reaches` = n_rchs,
-         `Stream Length (km)` = tot_length,
-         Capacity = tot_cap,
-         `Capacity SE` = tot_cap_se) %>%
-    select(-HUC12) %>%
-  relocate('HUC12 Name','Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
-  kable(booktabs = T,
-        digits = c(0,0,1,0,0,0),
-        align = "lccccc",
-        format.args = list(big.mark = ","),
-        caption = "Estimated available habitat for **juvenile summer rearing** Chinook salmon in the North Fork Salmon watershed by HUC12 delineation.") %>%
-  kable_styling(full_width = F,
-                position = "center",
-                bootstrap_options = c("striped", "condensed"))
-
-```
-
-```{r chnk-win-tbl-h12}
-chnk_win_cap_h12 %>%
-  subset(!`HUC12` == "Total" | is.na(`HUC12`)) %>%
-  mutate(tot_length = tot_length / 1000,
-         'Avg. Capacity/km' = tot_cap/tot_length,
-         'HUC12 Name' = replace_na(`HUC12 Name`, 'Total')) %>%
-  rename(`Reaches` = n_rchs,
-         `Stream Length (km)` = tot_length,
-         Capacity = tot_cap,
-         `Capacity SE` = tot_cap_se) %>%
-    select(-HUC12) %>%
-  relocate('HUC12 Name','Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
-  kable(booktabs = T,
-        digits = c(0,0,1,0,0,0),
-        align = "lccccc",
-        format.args = list(big.mark = ","),
-        caption = "Estimated available habitat for **juvenile winter rearing** Chinook salmon in the North Fork Salmon watershed by HUC12 delineation.") %>%
-  kable_styling(full_width = F,
-                position = "center",
-                bootstrap_options = c("striped", "condensed"))
-
-```
-
-```{r chnk-redd-tbl-h12}
-chnk_redd_cap_h12 %>%
-  subset(!`HUC12` == "Total" | is.na(`HUC12`)) %>%
-  mutate(tot_length = tot_length / 1000,
-         'Avg. Capacity/km' = tot_cap/tot_length,
-         'HUC12 Name' = replace_na(`HUC12 Name`, 'Total')) %>%
-  rename(`Reaches` = n_rchs,
-         `Stream Length (km)` = tot_length,
-         Capacity = tot_cap,
-         `Capacity SE` = tot_cap_se) %>%
-    select(-HUC12) %>%
-  relocate('HUC12 Name','Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
-  kable(booktabs = T,
-        digits = c(0,0,1,1,2,1),
-        align = "lccccc",
-        format.args = list(big.mark = ","),
-        caption = "Estimated available **spawning (redds)** habitat for Chinook salmon in the North Fork Salmon watershed by HUC12 delineation.") %>%
-  kable_styling(full_width = F,
-                position = "center",
-                bootstrap_options = c("striped", "condensed"))
-
-```
-
-### Steelhead HUC12
-
-```{r calc-sthd-capacity-h12}
-# steelhead, summer parr
-sthd_sum_cap_h12 = calc_watershed_cap(NF_huc_sf,
-                                  NF_sum_sf_h12,
-                                  capacity_name = "sthd_per_m",
-                                  capacity_se_name = "sthd_per_m_se",
-                                  by_stream = T)%>%
-  rename(HUC12 = StreamName) %>%
-  left_join(NF_HUC12_sf %>%
-              select(Name, HUC12) %>%
-              st_drop_geometry()) %>%
-  rename('HUC12 Name' = Name)
-
-# steelhead, winter presmolt
-sthd_win_cap_h12 = calc_watershed_cap(NF_huc_sf,
-                                  NF_win_sf_h12,
-                                  capacity_name = "sthd_per_m",
-                                  capacity_se_name = "sthd_per_m_se",
-                                  by_stream = T)%>%
-  rename(HUC12 = StreamName) %>%
-  left_join(NF_HUC12_sf %>%
-              select(Name, HUC12) %>%
-              st_drop_geometry()) %>%
-  rename('HUC12 Name' = Name)
-
-# steelhead, redds
-sthd_redd_cap_h12 = calc_watershed_cap(NF_huc_sf,
-                                   NF_redd_sf_h12,
-                                   capacity_name = "sthd_per_m",
-                                   capacity_se_name = "sthd_per_m_se",
-                                   by_stream = T)%>%
-  rename(HUC12 = StreamName) %>%
-  left_join(NF_HUC12_sf %>%
-              select(Name, HUC12) %>%
-              st_drop_geometry()) %>%
-  rename('HUC12 Name' = Name)
-
-```
-
-```{r sthd-sum-tbl-h12}
-sthd_sum_cap_h12 %>%
-  subset(!`HUC12` == "Total" | is.na(`HUC12`)) %>%
-  mutate(tot_length = tot_length / 1000,
-         'Avg. Capacity/km' = tot_cap/tot_length,
-         'HUC12 Name' = replace_na(`HUC12 Name`, 'Total')) %>%
-  rename(`Reaches` = n_rchs,
-         `Stream Length (km)` = tot_length,
-         Capacity = tot_cap,
-         `Capacity SE` = tot_cap_se) %>%
-    select(-HUC12) %>%
-  relocate('HUC12 Name','Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
-  kable(booktabs = T,
-        digits = c(0,0,1,0,0,0),
-        align = "lccccc",
-        format.args = list(big.mark = ","),
-        caption = "Estimated available habitat for **juvenile summer rearing** steelhead in the North Fork Salmon watershed by HUC12 delineation.") %>%
-  kable_styling(full_width = F,
-                position = "center",
-                bootstrap_options = c("striped", "condensed"))
-
-```
-
-```{r sthd-win-tbl-h12}
-sthd_win_cap_h12 %>%
-  subset(!`HUC12` == "Total" | is.na(`HUC12`)) %>%
-  mutate(tot_length = tot_length / 1000,
-         'Avg. Capacity/km' = tot_cap/tot_length,
-         'HUC12 Name' = replace_na(`HUC12 Name`, 'Total')) %>%
-  rename(`Reaches` = n_rchs,
-         `Stream Length (km)` = tot_length,
-         Capacity = tot_cap,
-         `Capacity SE` = tot_cap_se) %>%
-    select(-HUC12) %>%
-  relocate('HUC12 Name','Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
-  kable(booktabs = T,
-        digits = c(0,0,1,0,0,0),
-        align = "lccccc",
-        format.args = list(big.mark = ","),
-        caption = "Estimated available habitat for **juvenile winter rearing** steelhead in the North Fork Salmon watershed by HUC12 delineation.") %>%
-  kable_styling(full_width = F,
-                position = "center",
-                bootstrap_options = c("striped", "condensed"))
-
-```
-
-```{r sthd-redd-tbl-h12}
-sthd_redd_cap_h12 %>%
-  subset(!`HUC12` == "Total" | is.na(`HUC12`)) %>%
-  mutate(tot_length = tot_length / 1000,
-         'Avg. Capacity/km' = tot_cap/tot_length,
-         'HUC12 Name' = replace_na(`HUC12 Name`, 'Total')) %>%
-  rename(`Reaches` = n_rchs,
-         `Stream Length (km)` = tot_length,
-         Capacity = tot_cap,
-         `Capacity SE` = tot_cap_se) %>%
-    select(-HUC12) %>%
-  relocate('HUC12 Name','Reaches','Stream Length (km)','Capacity','Capacity SE','Avg. Capacity/km') %>%
-  kable(booktabs = T,
-        digits = c(0,0,1,1,2,1),
-        align = "lccccc",
-        format.args = list(big.mark = ","),
-        caption = "Estimated available **spawning (redds)** habitat for steelhead in the North Fork Salmon watershed by HUC12 delineation.") %>%
-  kable_styling(full_width = F,
-                position = "center",
-                bootstrap_options = c("striped", "condensed"))
-
-```
-
-
 
 
 <!-- ## Available vs. Required Capacity Model Predictions -->
