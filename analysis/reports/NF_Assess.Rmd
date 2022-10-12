@@ -91,9 +91,9 @@ theme_set(theme_pubr(x.text.angle = 45,
 
 # Background
 
-The primary purpose of a North Fork Salmon River Assessment is to develop a restoration plan that provides a strategy for informing the identification, prioritization, and development of high-quality projects to improve instream habitats for salmonids listed under the Endangered Species Act (ESA) and other aquatic species. The assessment is intended to identify habitat limitations and associated geomorphically appropriate restoration recommendations for spawning and rearing life stages of Chinook salmon and steelhead along reaches of the North Fork Salmon River and tributaries encompassing approximately 85 km of stream.
+The primary purpose of a North Fork Salmon River Assessment is to develop a restoration plan that provides a strategy for informing the identification, prioritization, and development of high-quality projects to improve instream habitats for salmonids listed under the Endangered Species Act (ESA) and other aquatic species. The assessment is intended to identify habitat limitations and associated geomorphically appropriate restoration recommendations for spawning and rearing life-stages of Chinook salmon and steelhead along reaches of the North Fork Salmon River and tributaries encompassing approximately 85 km of stream.
 
-Rio ASE and Mount Hood Environmental (MHE) personnel have developed a framework for completing this assessment to support development and prioritization of river, floodplain, and fish habitat restoration actions in the North Fork Salmon River and tributaries. Analyses will be conducted to facilitate the understanding of expected riverine and floodplain processes and the identification of restoration actions that are consistent and compatible with natural reach-scale hydraulic categories, types, and locations of potential restoration actions relative to distinct geomorphic reaches within the watershed. The North Fork Salmon River assessment consists of integrated biological (e.g., fish habitat) and geomorphic analyses to identify restoration actions that are physically appropriate and optimized to improve instream habitats of ESA-listed salmonids and other aquatic species. This approach will provide the basis for linking project identification, development, implementation, and monitoring, and adaptive management at the same spatial scales, in order to plan project development and implementation strategies accordingly.
+Rio ASE and Mount Hood Environmental (MHE) personnel have developed a framework for completing this assessment. Analyses will be conducted to facilitate the understanding of expected riverine and floodplain processes and the identification of restoration actions that are consistent and compatible with natural reach-scale hydraulic categories, types, and locations of potential restoration actions relative to distinct geomorphic reaches within the watershed. The North Fork Salmon River assessment consists of integrated biological (e.g., fish habitat) and geomorphic analyses to identify restoration actions that are physically appropriate and optimized to improve instream habitats of ESA-listed salmonids and other aquatic species. This approach will provide the basis for linking project identification, development, implementation, monitoring, and adaptive management at the same spatial scales to effectively plan project development and implementation strategies.
 
 ## Focal Species
 
@@ -109,19 +109,19 @@ We assume that actions taken to improve habitat conditions for Chinook salmon an
 
 ## General Approach
 
-A key component for the biological approach is to assess the watershed (population) habitat carrying capacity necessary to support recovery of Chinook salmon and steelhead and compare that to available habitat capacity to elucidate watershed-scale capacity limitations in the North Fork Salmon River. Information on capacity deficits, by species and life stage (spawning, summer rearing, and winter rearing), can inform geomorphic assessments to identify geomorphically appropriate solutions to resovle limitations, assisting project identification, development, and implementation. Estimates of the capacity necessary to achieve given recovery goals are accomplished using a Generalize Capacity Model [Appendix C in @IdahoOSCTeam2019]. Available habitat capacity estimates are made using a quantile random forest (QRF) framework [@See2021].
+A key component for the biological approach is to assess the watershed (population) habitat carrying capacity necessary to support recovery of Chinook salmon and steelhead and compare that to available habitat capacity to elucidate watershed-scale capacity limitations in the North Fork Salmon River. Information on capacity deficits (available habitat carrying capacity relative to habitat carrying capacity necessary to achieve population level recovery goals), by species and life-stage (spawning, summer rearing, and winter rearing), can inform geomorphic assessments to identify geomorphically appropriate solutions to resolve limitations, assisting project identification, development, and implementation. Estimates of the capacity necessary to achieve given recovery goals are accomplished using a Generalized Capacity Model (GCM;[Appendix C in @IdahoOSCTeam2019]). Available habitat capacity estimates are made using a quantile random forest (QRF) framework [@See2021].
 
-The watershed-scale fish habitat capacity assessment is supplemented by a stream temperature assessment, at least for life-stages that occur during summer months, to identify life-stages or locations where growth or survival of Chinook salmon and steelhead may be limited by summer stream temperatures in the North Fork Salmon River, in addition to physical habitat limitations. The stream temperature assessment leverages data available from NorWeST [@Isaak2017a].
+The watershed-scale fish habitat capacity assessment is supplemented by a summer stream temperature assessment to identify life-stages or locations where temperature may be limiting growth or survival of Chinook salmon and steelhead in the North Fork Salmon River. The stream temperature assessment leverages data available from NorWeST [@Isaak2017a].
 
-We next provide a reach-scale assessment of fish-habitat conditions in the North Fork Salmon River, by species and life stage, using fish habitat surveys completed in the North Fork Salmon River in 2020 and 2021 and using the Drone-Assisted Stream Habitat [DASH - @Carmichael2019] protocol. Additional details on available data, methods, and analyses are provided below.
+Next, we provide a reach-scale assessment of fish-habitat conditions in the North Fork Salmon River, by species and life-stage, using fish habitat surveys completed in the North Fork Salmon River in 2020 and 2021 and using the Drone-Assisted Stream Habitat [DASH - @Carmichael2019] protocol.
 
 # Watershed Assessment
 
 ## Habitat Carrying Capacity
 
-Habitat capacity deficits (e.g., Figure \@ref(fig:capacity-schematic)) resulting from limitations in habitat quantity and/or quality were assessed for three life stages of Chinook salmon and steelhead: 1) spawning (redds), 2) juvenile summer rearing, and 3) juvenile winter rearing. First, the capacity required to meet adults abundance escapement goals was estimated for each of the three life-stages using a Generalized Capacity Model framework [see Appendix C in @IdahoOSCTeam2019]. Then, currently available habitat capacity was estimated using the QRF framework described in @See2021 applied at each life-stage. Next, capacity limitations were identified by substracting required capacity from available capacity, providing an estimate of (potential) habitat capacity deficits by species and life-stage.
+Habitat capacity deficits (e.g., Figure \@ref(fig:capacity-schematic)) resulting from limitations in habitat quantity and/or quality were calculated for three life-stages of Chinook salmon and steelhead: 1) spawning (redds), 2) juvenile summer rearing, and 3) juvenile winter rearing. First, the capacity required to meet adult abundance escapement goals was estimated for each of the three life-stages using a GCM framework [see Appendix C in @IdahoOSCTeam2019]. Then, currently available habitat capacity was estimated using the QRF framework described in @See2021 applied at each life-stage. Finally, capacity limitations were identified by subtracting required capacity from available capacity, providing an estimate of (potential) habitat capacity deficits by species and life-stage.
 
-```{r capacity-schematic, out.width = "100%", fig.cap = "Schematic depicting an ideal scenario on the left with no limiting factors, while the right depicts a river with significant limiting factors resulting in reduced habitat capacity and production."}
+```{r capacity-schematic, out.width = "100%", fig.cap = "Schematic depicting habitat capacity by life-stage, with an ideal scenario on the left with no limiting factors, while the right depicts a river with significant limiting factors resulting in reduced habitat capacity and production."}
 knitr::include_graphics("../figures/hab-capac-fig.png")
 
 ```
@@ -186,14 +186,14 @@ NF_redd_df = NF_redd_sf %>%
 ### Required Capacity
 
 ```{r get-params}
-params = read_csv(here("analysis/data/raw_data/LifeHistoryParameters_0622.csv"))
+params = read_csv(here("../GCM_General/data/LifeHistoryParameters.csv"))
 
 #define target escapement
 target.esc = c(625, 625) # Chinook, steelhead; MAT + 25%
 n.sim = 5000
 
 set.seed(352)
-#Simulate the required abundances by life stage
+#Simulate the required abundances by life-stage
 
 #With normal distribution - no stoch for egg:parr, parr:presmolt
 reqs = tibble(Sim_number = rep(1:n.sim,2),
@@ -367,9 +367,9 @@ rec_goals = tibble(Species = c("Chinook", "Steelhead"),
 
 ```
 
-The Generalized Capacity Model (GCM) uses a combination of empirical and literature-based parameter estimates (Table \@ref(tab:param-tab)) to determine the capacity required to achieve a given adult abundance goal. We used adult escapement goals of `r prettyNum(rec_goals$Abundance[rec_goals$Species == "Chinook" & rec_goals$LifeStage == "Escapement"], big.mark = ",")` for Chinook salmon and `r prettyNum(rec_goals$Abundance[rec_goals$Species == "Steelhead" & rec_goals$LifeStage == "Escapement"], big.mark = ",")` for steelhead for the North Fork Salmon River. These escapement goals represent a minimum abundance threshold (MAT) [@NOAA2017] that provide an easily adoptable biological target to guide tributary habitat enhancement. Because the MATs set forth in @NOAA2017 are assessed using a 10-year geometric mean, it is necessary to ensure that adult escapement into each tributary equals or exceeds MAT. To accommodate this, @IdahoOSCTeam2019 included a 25% buffer (MAT + 25%) to ensure that goals will be met or exceeded. A margin of safetey also provides a buffer due to variability in ocean condtions, conditions in the downstream migration corridor, and potential climate change scenarios. However, if desired, different escapement goals could be assessed to determine required habitat capacities e.g., escapement goals set forth in @CBPTF2020.
+The GCM uses a combination of empirical and literature-based parameter estimates (Table \@ref(tab:param-tab)) to determine the capacity required to achieve a given adult abundance goal. We used adult escapement goals of `r prettyNum(rec_goals$Abundance[rec_goals$Species == "Chinook" & rec_goals$LifeStage == "Escapement"], big.mark = ",")` for Chinook salmon and `r prettyNum(rec_goals$Abundance[rec_goals$Species == "Steelhead" & rec_goals$LifeStage == "Escapement"], big.mark = ",")` for steelhead for the North Fork Salmon River. These escapement goals represent a minimum abundance threshold (MAT) [@NOAA2017] that provide an easily adoptable biological target to guide tributary habitat enhancement. Because the MATs set forth in @NOAA2017 are assessed using a 10-year geometric mean, it is necessary to ensure that adult escapement into each tributary equals or exceeds MAT. To accommodate this, @IdahoOSCTeam2019 included a 25% buffer (MAT + 25%) to ensure that goals will be met or exceeded. A margin of safety also provides a buffer due to variability in downstream migration and ocean conditions, and potential climate change scenarios.
 
-Required capacities to achieve these goals were estimated using the GCM with a simulation to account for expected inter-annual variation in life history parameters. The simulation was conducted by repeatedly drawing applicable parameters from normal distributions with means and standard deviations defined in Table \@ref(tab:param-tab) and constrained within the range of observed values. Standard deviations for egg-to-parr and parr-to-presmolt survival parameters were set to zero due to small sample sizes, high variability, and potential bias leading to potentially unreliable results. Following, adult escapement goals were multiplied step-wise through the applicable parameter values to obtain capacity requirements by life-stage. For example, the number of redds necessary for recovery was calculated by multiplying the adult escapement goal by the female ratio and the estimated redds per female. We conducted 5,000 simulations, resulting in a range of capacity requirements that were summarized to provide the mean required capacity by life-stage with associated confidence intervals. Sources for each parameter estimate are provided in Table \@ref(tab:param-tab); however, those values can be modified if update or in-basin estimates with empirical support are available.
+Required capacities to achieve escapement goals were estimated using the GCM with a simulation to account for expected inter-annual variation in life history parameters. The simulation was conducted by repeatedly drawing applicable parameters from normal distributions with means and standard deviations defined in Table \@ref(tab:param-tab) and constrained within the range of observed values. Standard deviations for egg-to-parr and parr-to-presmolt survival parameters were set to zero due to small sample sizes, high variability, and potential bias leading to potentially unreliable results. Following, adult escapement goals were multiplied step-wise through the applicable parameter values to obtain capacity requirements by life-stage. For example, the number of redds necessary for recovery was calculated by multiplying the adult escapement goal by the female ratio and the estimated redds per female. We conducted 5,000 simulations, resulting in a range of capacity requirements that were summarized to provide the mean required capacity by life-stage with associated confidence intervals. Sources for each parameter estimate are provided in Table \@ref(tab:param-tab); however, those values can be modified if update or in-basin estimates with empirical support are available.
 
 ```{r param-tab}
 params %>%
@@ -407,9 +407,9 @@ rec_goals %>%
 
 ### Available Capacity
 
-We define the available habitat capacity as the maximal abundance or load the habitat can support for a given species and life-stage given current habitat quantity and quality. Within fisheries research and management, it has been recognized that biotic and abiotic factors limit productivity within and across life-stages. However, we assume that observed fish density is a poor predictor of habitat capacity due to both a paucity of individuals (i.e., low spawner abundance) and the existence of unmeasured biotic or abiotic variables that may limit capacity. Therefore, available habitat capacity estimates were generated using a QRF framework developed by @See2021.
+We define the available habitat capacity as the maximal abundance or load the habitat can support for a species and life-stage given current habitat quantity and quality. Within fisheries research and management, it has been recognized that biotic and abiotic factors limit productivity within and across life-stages. However, we assume that observed fish density is a poor predictor of habitat capacity due to both a paucity of individuals (i.e., low spawner abundance) and the existence of unmeasured biotic or abiotic variables that may limit capacity. Therefore, available habitat capacity estimates were generated using a QRF framework developed by @See2021.
 
-The QRF model is a novel approach to estimate the carrying capacity of wadable stream to support spawning and rearing Chinook salmon and steelhead. The approach involves fitting a QRF [@Meinshausen2006; @Cade2003] to paired fish and habitat data across hundreds of sites in seven watersheds within the Columbia River Basin. Habitat data from the Columbia Habitat Monitoring Program (CHaMP) were paired to juvenile fish and redd survey data to develop fish-habitat relationships [@See2021]. Importantly, the QRF model places no constraints on possible fish-habitat relationships; instead, relationships are estimated from the empirical data regardless of being positive, negative, linear, non-linear, etc. Currently, available QRF models allow evaluation of three anadromous life stages: 1) spawning (redd) capacity, 2) juvenile (parr) summer rearing capacity, and 3) juvenile (presmolt) winter rearing capacity. Using the observed fish-habitat relationships, we can predict habitat capacity at any location with habitat data for model covariates (e.g., at all CHaMP sites) (Table \@ref(tab:cov-tab)). The random forest model produces a distribution of predictions, on for each tree in the forest, and we chose the 90th quantile of that distribution as a proxy for carrying capacity. The QRF models used to estimate available habitat capacity, including data inputs, are described in further detail in Appendix B of @IdahoOSCTeam2019.
+The QRF model is a novel approach to estimate the carrying capacity of wadable stream to support spawning and rearing Chinook salmon and steelhead. The approach involves fitting a QRF model [@Meinshausen2006; @Cade2003] to paired fish and habitat data across hundreds of sites in seven watersheds within the Columbia River Basin. Habitat data from the Columbia Habitat Monitoring Program (CHaMP) were paired to juvenile fish and redd survey data to develop fish-habitat relationships [@See2021]. Importantly, the QRF model places no constraints on possible fish-habitat relationships; instead, relationships are estimated from the empirical data regardless of being positive, negative, linear, non-linear, etc. Currently, available QRF models allow evaluation of three anadromous life-stages: 1) spawning (redd) capacity, 2) juvenile (parr) summer rearing capacity, and 3) juvenile (presmolt) winter rearing capacity. Using the observed fish-habitat relationships, we can predict habitat capacity at any location with habitat data for model covariates (e.g., at all CHaMP sites) (Table \@ref(tab:cov-tab)). The random forest model produces a distribution of predictions, on for each tree in the forest, and we chose the 90th quantile of that distribution as a proxy for carrying capacity. The QRF models used to estimate available habitat capacity, including data inputs, are described in further detail in Appendix B of @IdahoOSCTeam2019.
 
 ```{r cov-tab}
 load(here("analysis/data/raw_data/QRF_new_hab_cov_tbl.rda"))
@@ -424,7 +424,7 @@ QRF_new_hab_cov_tbl %>%
 
 ```
 
-Although we have hundreds of sites across the Columbia River basin with detailed habitat data (i.e., CHaMP sites) that were used to estimate capacity within the QRF model, this only covers a small percentage of the anadromous zone within each CHaMP watershed. Therefore, capacity predictions are extrapolated to areas between and outside of CHaMP sites using a [stream layer](https://www.nwfsc.noaa.gov/research/datatech/data/col_basin_hist_project/index.cfm) available from NOAA fisheries and an extrapolation model. This layer consists of a polyline shapefile divided into 200m reaches with various attributes associated with each reach. We refer to these as globally available attributes (GAAs) because they are associated with every reach across all watersheds in the Columbia River Basin. The shapefile is derived from the [National Hydrography Dataset High Resolution](https://www.usgs.gov/core-science-systems/ngp/national-hydrography/nhdplus-high-resolution) (NHDPlus HR) dataset, which has a high resolution, 1:24,000.
+Although we have hundreds of sites across the Columbia River basin with detailed habitat data (i.e., CHaMP sites) that were used to estimate capacity within the QRF model, this only covers a small percentage of the anadromous zone within each CHaMP watershed. Therefore, capacity predictions are extrapolated to areas between and outside of CHaMP sites using a [stream layer](https://www.nwfsc.noaa.gov/research/datatech/data/col_basin_hist_project/index.cfm) available from NOAA fisheries combined with an extrapolation model. This layer consists of a polyline shapefile divided into 200m reaches with various attributes associated with each reach. We refer to these as globally available attributes (GAAs) because they are associated with every reach across all watersheds in the Columbia River Basin. The shapefile is derived from the [National Hydrography Dataset High Resolution](https://www.usgs.gov/core-science-systems/ngp/national-hydrography/nhdplus-high-resolution) (NHDPlus HR) dataset, which has a high resolution, 1:24,000.
 
 We estimated capacity in the North Fork Salmon River watershed by quantifying the relationships between GAAs and QRF capacity predictions at all of the sites used to populate the QRF model. This was conducted using a second random forest model, with GAAs as covariates and QRF-predicted capacities (linear or areal) as the response variable. The random forest approach allows for non-linear associations between capacity and GAAs, and constricts capacity predictions within the estimated range from the initial QRF model. Density predictions for the North Fork Salmon watershed were calculated for the 200m reach segments using the random forest model within GAA inputs, and reach capacity was calculated by multiplying the predicted fish/m by the length of the reach. Capacity for specific for the mainstem and tributaries were then calculated by summing capacities for each.
 
@@ -736,7 +736,7 @@ ggarrange(sthd_sum_map,
 
 ### Habitat Capacity Limitations
 
-Finally, (potential) habitat capacity limitations were quantified by subtracting required capacity from available capacity (Table \@ref(tab:cap-limits)). When required capacity exceeds available capacity, this represents a habitat capacity deficit for a given species and life-stage in the North Fork Salmon River watershed. Deficits can be used to identify potential species and life-stage limitations in physical habitat quantity and/or quality. Relative habitat capacity deficits were also calculated as available capacity divided by required capacity (Table \@ref(tab:cap-limits)) to help provide guidance on species and life-stages where rehabilitation efforts could be targeted. Comparisons of available and required capacity by are also depicted in Figures \@ref(fig:chnk-def-fig) and \@ref(fig:sthd-def-fig).
+Finally, habitat capacity limitations were quantified by subtracting required capacity from available capacity (Table \@ref(tab:cap-limits)). When required capacity exceeds available capacity, this represents a habitat capacity deficit for a given species and life-stage in the North Fork Salmon River watershed. Deficits can be used to identify potential species and life-stage limitations in physical habitat quantity and/or quality. Relative habitat capacity deficits were also calculated as available capacity divided by required capacity (Table \@ref(tab:cap-limits)) . Comparisons of available and required capacity by are also depicted in Figures \@ref(fig:chnk-def-fig) and \@ref(fig:sthd-def-fig).
 
 ```{r cap-limits}
 rec_goals %>%
@@ -880,11 +880,12 @@ sthd_def_p
 
 ```
 
-Available capacity deficits can also be evaluated in terms of spawning escapement using the GCM approach (Table \@ref(tab:cap-spawnconv-tbl)). For example, predicted redd capacity is divided by the estimated number of redds per female and the female ratio to provied an estimate of the spawner abundance supported given the available capacity for a given life stage.
+Available capacity deficits can also be evaluated in terms of spawning escapement using the GCM approach (Table \@ref(tab:cap-spawnconv-tbl)). This provides an estimate of the number of spawners
+that could be supported if capacity was dependent solely on a single life-stage. For example, predicted redd capacity is divided by the estimated number of redds per female and the female ratio to provide an estimate of the spawner abundance supported given the available capacity for a given life-stage.
 
 ```{r cap-spawnconv-tbl}
 availcap_spawners %>%
-  #rename(`Life Stage` = LifeStage,
+  #rename(`life-stage` = LifeStage,
   #       `Available Capacity` = LifeStage_Cap,
   #       `Predicted Spawners` = Pred_Spawners) %>%
   kable(booktabs = T,
@@ -950,7 +951,7 @@ norwest_p
 
 ```{r temp-thresh}
 temp_thresh_tab = tibble(Species = c("Chinook", "Chinook", "Steelhead"),
-                         `Life Stage` = c("Spawning", "Summer Rearing", "Summer Rearing"),
+                         `life-stage` = c("Spawning", "Summer Rearing", "Summer Rearing"),
                          Timing = c("8/10 - 9/30", "6/10 - 10/15", "6/10 - 10/15"),
                          Minimum = c("3.3", "4.5", "4.5"),
                          Optimum = c("7.2-14.5", "10-16", "10-18"),
@@ -958,7 +959,7 @@ temp_thresh_tab = tibble(Species = c("Chinook", "Chinook", "Steelhead"),
                          Acute = c("20", "22", "22")) %>%
   kable(booktabs = T,
         align = "ccccccc",
-        caption = "Life stage timing, and minimum, optimum, maximu, and acute temperature (Celcius) thresholds for summer life stages of Chinook salmon and steelhead, adopted from Carter (2005). All temperatures are expressed as the 7-day Maximum Weekly Maximum Temperature (MWMT).") %>%
+        caption = "life-stage timing, and minimum, optimum, maximu, and acute temperature (Celcius) thresholds for summer life-stages of Chinook salmon and steelhead, adopted from Carter (2005). All temperatures are expressed as the 7-day Maximum Weekly Maximum Temperature (MWMT).") %>%
   kable_styling(full_width = F,
                 position = "center",
                 bootstrap_options = c("striped", "condensed"))
@@ -966,9 +967,9 @@ temp_thresh_tab
 
 ```
 
-We calculated whether current and projected August mean stream temperatures exceeded the optimum range (Table \@ref(tab:temp-thresh)) for summer life stages of Chinook salmon and steelhead. For Chinook salmon, we considered the spawning and summer parr life-stages, and for steelhead, the summer parr life stage was considered (Figure \@ref(fig:thresh-map)).
+We calculated whether current and projected August mean stream temperatures exceeded the optimum range (Table \@ref(tab:temp-thresh)) for summer life-stages of Chinook salmon and steelhead. For Chinook salmon, we considered the spawning and summer parr life-stages, and for steelhead, the summer parr life-stage was considered (Figure \@ref(fig:thresh-map)).
 
-```{r thresh-map, out.width = "100%", fig.cap = "Maps depicting whether current (S2_02_11) and projected (S302040D and S32_2080D) August mean stream temperatures exceed (TRUE) or are below (FALSE) the optimal range for summer life stages of Chinook salmon and steelhead and within the North Fork Salmon River."}
+```{r thresh-map, out.width = "100%", fig.cap = "Maps depicting whether current (S2_02_11) and projected (S302040D and S32_2080D) August mean stream temperatures exceed (TRUE) or are below (FALSE) the optimal range for summer life-stages of Chinook salmon and steelhead and within the North Fork Salmon River."}
 thresh_df = norwest_df %>%
   mutate(`Chinook Spawning` = ifelse(temp_c > 14.5, T, F),
          `Chinook Rearing` = ifelse(temp_c > 16, T, F),
@@ -1007,7 +1008,7 @@ thresh_p
 
 ```
 
-```{r temp-dens-map, eval = FALSE, out.width = "100%", fig.cap = "Maps depicting whether current (S2_02_11) and projected (S302040D and S32_2080D) August mean stream temperatures exceed (TRUE) or are below (FALSE) the optimal range for summer life stages of Chinook salmon and steelhead and within the North Fork Salmon River."}
+```{r temp-dens-map, eval = FALSE, out.width = "100%", fig.cap = "Maps depicting whether current (S2_02_11) and projected (S302040D and S32_2080D) August mean stream temperatures exceed (TRUE) or are below (FALSE) the optimal range for summer life-stages of Chinook salmon and steelhead and within the North Fork Salmon River."}
 
 temp_dens_p_chnk_sum = norwest_df %>%
   ggplot() +
@@ -1071,16 +1072,16 @@ Comparisons of fish habitat capacity, both within the NFSR and to watersheds els
 ```
 ## QRF Capacity Comparisons
 
-Violin plots showing the distribution of Chinook capacity estimates for 200 m reaches for watersheds in the Upper Salmon River Basin (or adjacent basins) where Drone Assisted Stream Habitat (DASH) surveys have been conducted. NOTE: There were a variety of motiviations for surveying habitat sites within these watersheds (reference reach assessment, pre- post- restoration monitoring, etc.). The violon plots should not be interpreted as representative habitat for the entire watershed, and rather an over view of the relative habitat quality that was surveyed within the watershed.
+*NEED TO REVISE* Violin plots showing the distribution of Chinook capacity estimates for 200 m reaches for watersheds in the Upper Salmon River Basin (or adjacent basins) where Drone Assisted Stream Habitat (DASH) surveys have been conducted. NOTE: There were a variety of motivations for surveying habitat sites within these watersheds (reference reach assessment, pre- post- restoration monitoring, etc.). The violin plots should not be interpreted as representative habitat for the entire watershed, and rather an overview of the relative habitat quality that was surveyed within the watershed.
 
-```{r Dash-compare-chnk, out.width = "100%", fig.cap = "Violin plots showing the distribution of ***Chinook salmon*** capacity estimates for 200 meter reaches for watersheds in the Upper Salmon River basin (or adjacent basins) where DASH surveys have been completed. The violin plots should not be interepreted as representative habitat for the entire watershed, but rather an overview of the relative habitat quality that was DASH surveyed within the watershed."}
+```{r Dash-compare-chnk, out.width = "100%", fig.cap = "Violin plots showing the distribution of ***Chinook salmon*** capacity estimates for 200 meter reaches for watersheds in the Upper Salmon River basin (or adjacent basins) where DASH surveys have been completed. The violin plots should not be interpreted as representative habitat for the entire watershed, but rather an overview of the relative habitat quality that was DASH surveyed within the watershed."}
 
 # NOTE: These figures were created in the Reference Reach Assessment - CapacityData_prep.R script. 
 knitr::include_graphics("../figures/Wtsd_density_violinplot_chnk_NF_assess.png")
 
 ```
 
-```{r Dash-compare-sthd, out.width = "100%", fig.cap = "Violin plots showing the distribution of ***steelhead*** capacity estimates for 200 meter reaches for watersheds in the Upper Salmon River basin (or adjacent basins) where DASH surveys have been completed. The violin plots should not be interepreted as representative habitat for the entire watershed, but rather an overview of the relative habitat quality that was DASH surveyed within the watershed."}
+```{r Dash-compare-sthd, out.width = "100%", fig.cap = "Violin plots showing the distribution of ***steelhead*** capacity estimates for 200 meter reaches for watersheds in the Upper Salmon River basin (or adjacent basins) where DASH surveys have been completed. The violin plots should not be interpreted as representative habitat for the entire watershed, but rather an overview of the relative habitat quality that was DASH surveyed within the watershed."}
 
 # NOTE: These figures were created in the Reference Reach Assessment - CapacityData_prep.R script. 
 knitr::include_graphics("../figures/Wtsd_density_violinplot_sthd_NF_assess.png")
@@ -1089,7 +1090,7 @@ knitr::include_graphics("../figures/Wtsd_density_violinplot_sthd_NF_assess.png")
 
 ## Habitat Measurements and Metrics
 
-Within each life-stage, the plots are essentially showing the same thing. Consider consolidating to one figure for each life-stage that covers both Chinook salmon and steelhead.
+-   NOTE TO SELF\*Within each life-stage, the plots are essentially showing the same thing. Consider consolidating to one figure for each life-stage that covers both Chinook salmon and steelhead.
 
 ### Juvenile Summer Rearing
 
@@ -1141,9 +1142,9 @@ knitr::include_graphics("../figures/DASH_10UL_sthd_NF_assess_redds.png")
 
 # Results and Interpretation
 
-## Limited Species and Life Stages
+## Limited Species and life-stages
 
-Chinook redds, steelhead redds, and steelhead summer parr limiting life stages. Improve low capacity habitat for redds further upstream, juveniles habitat below. Improve connectivity. Add details and discuss further.
+-   Note to selfChinook redds, steelhead redds, and steelhead summer parr limiting life-stages. Improve low capacity habitat for redds further upstream, juveniles habitat below. Improve connectivity. Add details and discuss further.
 
 ## Restoration locations & strategies by HUC12
 
@@ -1344,9 +1345,6 @@ chnk_redd_HUC12 = NF_redd_sf %>%
     
 ```
 
-
-
-
 ```{r chnk-sum-tbl-h12}
 chnk_sum_cap_h12 %>%
   subset(!`HUC12` == "Total" | is.na(`HUC12`)) %>%
@@ -1371,7 +1369,6 @@ chnk_sum_cap_h12 %>%
 chnk_sum_HUC12
 
 ```
-
 
 ```{r chnk-win-tbl-h12}
 chnk_win_cap_h12 %>%
@@ -1398,7 +1395,6 @@ chnk_win_HUC12
 
 ```
 
-
 ```{r chnk-redd-tbl-h12}
 chnk_redd_cap_h12 %>%
   subset(!`HUC12` == "Total" | is.na(`HUC12`)) %>%
@@ -1423,7 +1419,6 @@ chnk_redd_cap_h12 %>%
 chnk_redd_HUC12
 
 ```
-
 
 ### Steelhead HUC12
 
@@ -1601,10 +1596,6 @@ sthd_redd_HUC12 = NF_redd_sf %>%
     
 ```
 
-
-
-
-
 ```{r sthd-sum-tbl-h12}
 sthd_sum_cap_h12 %>%
   subset(!`HUC12` == "Total" | is.na(`HUC12`)) %>%
@@ -1686,7 +1677,6 @@ sthd_redd_HUC12
 ## Restoration locations & strategies by geomorphic reaches
 
 Strictly from a fisheries/biological standpoint
-
 
 ```{r chnk-geo-reaches}
 
@@ -1972,7 +1962,6 @@ chnk_redd_georch = NF_geo_reach_chnk %>%
 
 ```
 
-
 ```{r chnk-sum-tbl-georeach}
 chnk_sum_cap_rch %>% 
   subset(!`Reach` == "Total" | is.na(`Reach`)) %>%
@@ -1996,12 +1985,10 @@ kable(booktabs = T,
 
 ```
 
-
 ```{r chnk-sum-georch-fig, fig.cap = "Average Chinook summar parr (capacity/km) by geomorphic reach for the North Fork Salmon River"}
 chnk_sum_georch
 
 ```
-
 
 ```{r chnk-win-tbl-georeach}
 chnk_win_cap_rch %>% 
@@ -2060,7 +2047,6 @@ chnk_redd_cap_rch %>%
 chnk_redd_georch
 
 ```
-
 
 ```{r sthd-geo-reaches}
 
@@ -2400,8 +2386,6 @@ sthd_redd_georch
 
 ```
 
-
-
 Make high/med/low quality designations at the reach scale
 
 Chinook redds PRIORITY
@@ -2413,8 +2397,6 @@ Chinook winter presmolts
 Steelhead redds PRIORITY
 
 Steelhead summer parr PRIORITY
-
-
 
 ## Reconnection/fish passage potential
 
@@ -2563,7 +2545,6 @@ sthd_redd_cap %>%
                 bootstrap_options = c("striped", "condensed"))
 
 ```
-
 
 <!-- ## Available vs. Required Capacity Model Predictions -->
 
