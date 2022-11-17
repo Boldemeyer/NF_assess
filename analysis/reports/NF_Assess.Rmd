@@ -942,30 +942,38 @@ norwest_df = NF_rch_sf %>%
   mutate(S2_02_11 = replace(S2_02_11, S2_02_11 == -9999.00, NA),
          S30_2040D = replace(S30_2040D, S30_2040D == -9999.00, NA),
          S32_2080D = replace(S32_2080D, S32_2080D == -9999.00, NA)) %>%
-  pivot_longer(cols = c("S2_02_11",
-                        "S30_2040D",
-                        "S32_2080D"),
+  rename(`Recent Mean` = S2_02_11,
+         `2040 Projected` = S30_2040D,
+         `2080 Projected` = S32_2080D) %>%
+  pivot_longer(cols = c("Recent Mean",
+                        "2040 Projected",
+                        "2080 Projected"),
                names_to = "scenario",
-               values_to = "temp_c")
+               values_to = "temp_c") %>%
+  mutate(scenario = factor(scenario, levels = c("Recent Mean", 
+                                                "2040 Projected", 
+                                                "2080 Projected")))
 
 norwest_p = norwest_df %>%
   ggplot() +
   geom_sf(data = NF_huc_sf %>%
             st_union(),
           fill = NA,
-          color = "gray50") +
+          color = "gray50",
+          size = 0.5) +
   geom_sf(color = river_color) +
   geom_sf(data = norwest_df,
           aes(color = temp_c),
-          size = 1) +
+          size = 0.5) +
   scale_color_viridis_c(option = "turbo") +
   facet_wrap(~ scenario,
-             ncol = 3) +
-  theme_classic() +
+             ncol = 2) +
+  theme_bw() +
   theme(legend.position = "bottom",
         axis.text.x = element_blank(),
         axis.text.y = element_blank(),
-        axis.ticks = element_blank()) +
+        axis.ticks = element_blank(),
+        panel.grid.major = element_line(color = "transparent")) +
   labs(title = "NorWeST Stream Temperature Predictions",
        color = expression("Temperature ("^o*"C)"))
 norwest_p
@@ -1013,15 +1021,16 @@ thresh_p = thresh_df %>%
   geom_sf(data = NF_huc_sf %>%
             st_union(),
           fill = NA,
-          color = "gray50") +
+          color = "gray50",
+          size = 0.5) +
   #geom_sf(color = river_color) +
   geom_sf(data = thresh_df,
           aes(color = above_optimum),
-          size = 1) +
+          size = 0.5) +
   scale_color_manual(values = c("FALSE" = river_color,
                                 "TRUE" = "red")) +
   facet_grid(spec_ls ~ scenario) +
-  theme_classic() +
+  theme_bw() +
   theme(legend.position = "top",
         axis.text.x = element_blank(),
         axis.text.y = element_blank(),
