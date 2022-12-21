@@ -30,11 +30,8 @@ cov_choice = c("Reduced","CovLW","Dash","No_elev")[4]
 
 load(paste0(cap_path, mod_choice,'_',cov_choice, '.rda'))
 
-site_cats = read_csv(here('analysis/data/SiteList_ForMA.csv'))
-
 new_preds_sum = new_preds %>%
-  mutate(site = trimws(gsub("[[:digit:]]","", site_name))) %>%
-  left_join(site_cats)
+  mutate(site = trimws(gsub("[[:digit:]]","", site_name)))
 
 ###
 
@@ -45,8 +42,7 @@ mod_choice = c('juv_summer',
 load(paste0(cap_path, mod_choice,'_',cov_choice, '.rda'))
 
 new_preds_win = new_preds %>%
-  mutate(site = trimws(gsub("[[:digit:]]","", site_name))) %>%
-  left_join(site_cats)
+  mutate(site = trimws(gsub("[[:digit:]]","", site_name)))
 
 ###
 
@@ -57,8 +53,7 @@ mod_choice = c('juv_summer',
 load(paste0(cap_path, mod_choice,'_',cov_choice, '.rda'))
 
 new_preds_redd = new_preds %>%
-  mutate(site = trimws(gsub("[[:digit:]]","", site_name))) %>%
-  left_join(site_cats)
+  mutate(site = trimws(gsub("[[:digit:]]","", site_name))) 
 
 new_preds_all = new_preds_sum %>%
   mutate(model ="Juv Summer") %>%
@@ -67,89 +62,82 @@ new_preds_all = new_preds_sum %>%
   add_row(., new_preds_redd %>%
             mutate(model = "Redds"))
 
-### BV_CG Summer
+### Upper NF Summer
 
-BV_CG = st_read(here('analysis/data/raw_data/Bear Valley CG digitized FINAL.gpkg')) %>%
+Upper_NF = st_read(here('analysis/data/raw_data/DASH/Upper_NF_Digitized_Final.gpkg')) %>%
   st_transform(WS_crs)
 
-BV_CG_juv_sum<- BV_CG %>%
+Upper_NF_juv_sum<- Upper_NF %>%
   st_join(new_preds_sum)
 
-ggplot(data = BV_CG_juv_sum) +
+ggplot(data = Upper_NF_juv_sum) +
   geom_sf(aes(fill = chnk_per_m)) +
   scale_fill_viridis_c(direction = -1,
-                        limits = c(0,12.8),
+                        limits = c(0,70),
                         name = "Summer Chinook Parr (per m)") +
   theme(axis.text = element_blank(),
         legend.position = 'bottom') +
-  labs(title = "Bear Valley CG, Bear Valley")
+  labs(title = "Upper NF")
 
-### BV_CG Winter
+st_write(Upper_NF_juv_sum,
+         dsn = here('analysis/data/derived_data/Upper_NF_juv_sum_dig.gpkg'),
+         delete_dsn = T)
 
-BV_CG_juv_win<- BV_CG %>%
+### Upper NF Winter
+
+Upper_NF_juv_win<- Upper_NF %>%
   st_join(new_preds_win)
 
-ggplot(data = BV_CG_juv_win) +
+ggplot(data = Upper_NF_juv_win) +
   geom_sf(aes(fill = chnk_per_m)) +
   scale_fill_viridis_c(direction = -1,
-                       limits = c(0,0.4),
+                       limits = c(0,0.8),
                        name = "Winter Chinook Presmolt (per m)") +
   theme(axis.text = element_blank(),
         legend.position = 'bottom') +
-  labs(title = "Bear Valley CG, Bear Valley")
+  labs(title = "Upper NF")
 
 
-st_write(BV_CG_juv_win,
-         dsn = here('analysis/data/derived_data/Bear_valley_CG_juv_win.gpkg'),
+st_write(Upper_NF_juv_win,
+         dsn = here('analysis/data/derived_data/Upper_NF_juv_win_dig.gpkg'),
          delete_dsn = T)
 
-### BV_CG Redds
+### Upper NF Redds
 
-BV_CG_redd<- BV_CG %>%
+Upper_NF_redd<- Upper_NF %>%
   st_join(new_preds_redd)
 
-ggplot(data = BV_CG_redd) +
+ggplot(data = Upper_NF_redd) +
   geom_sf(aes(fill = chnk_per_m)) +
   scale_fill_viridis_c(direction = -1,
-                       limits = c(0,0.0045),
+                       limits = c(0,0.08),
                        name = "Chinook Redds (per m)") +
   theme(axis.text = element_blank(),
         legend.position = 'bottom') +
-  labs(title = "Bear Valley CG, Bear Valley")
+  labs(title = "Upper NF")
 
-#####Cache
+##### Arbon
 
-cache_money = st_read(here('analysis/data/raw_data/Cache Money digitized FINAL.gpkg')) %>%
+Arbon = st_read(here('analysis/data/raw_data/DASH/Arbon_Digitized_Final.gpkg')) %>%
   st_transform(WS_crs)
 
-cache_money_juv_sum<- cache_money %>%
-  st_join(new_preds_sum) %>%
-  fill(site_name.y:site_group_ws, .direction = 'up')
+### Arbon winter
 
-### Cache Summer
-ggplot(data = cache_money_juv_sum) +
-  geom_sf(aes(fill = chnk_per_m)) +
-  scale_fill_viridis_c(direction = -1,
-                       limits = c(0,12.8),
-                       name = "Summer Chinook Parr (per m)") +
-  theme(axis.text = element_blank(),
-        legend.position = 'bottom') +
-  labs(title = "Cache Money, Bear Valley")
+Arbon_juv_win<- Arbon %>%
+  st_join(new_preds_win) 
 
-### Cache winter
-
-cache_money_juv_win<- cache_money %>%
-  st_join(new_preds_win) %>%
-  fill(site_name.y:site_group_ws, .direction = 'up')
-
-ggplot(data = cache_money_juv_win) +
+ggplot(data = Arbon_juv_win) +
   geom_sf(aes(fill = chnk_per_m)) +
   scale_fill_viridis_c(direction = -1,
                        limits = c(0,0.4),
                        name = "Winter Chinook Presmolt (per m)") +
   theme(axis.text = element_blank(),
         legend.position = 'bottom') +
-  labs(title = "Cache Money, Bear Valley")
+  labs(title = "Arbon")
+
+st_write(Arbon_juv_win,
+         dsn = here('analysis/data/derived_data/Arbon_juv_win_dig.gpkg'),
+         delete_dsn = T)
 
 
 ### Cache redd
