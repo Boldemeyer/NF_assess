@@ -140,21 +140,26 @@ st_write(Arbon_juv_win,
          delete_dsn = T)
 
 
-### Cache redd
+### Grouse redd
 
-cache_money_redd<- cache_money %>%
-  st_join(new_preds_redd) %>%
-  fill(site_name.y:site_group_ws, .direction = 'up')
+grouse = st_read(here('analysis/data/raw_data/DASH/Grouse_Digitized_Final.gpkg')) %>%
+  st_transform(WS_crs)
 
-ggplot(data = cache_money_redd) +
-  geom_sf(aes(fill = chnk_per_m)) +
+grouse_redd<- grouse %>%
+  st_join(new_preds_redd) 
+
+ggplot(data = grouse_redd) +
+  geom_sf(aes(fill = sthd_per_m)) +
   scale_fill_viridis_c(direction = -1,
-                       limits = c(0,0.018),
+                       limits = c(0,0.09),
                        name = "Chinook Redd (per m)") +
   theme(axis.text = element_blank(),
         legend.position = 'bottom') +
-  labs(title = "Cache Money, Bear Valley")
+  labs(title = "Grouse")
 
+st_write(grouse_redd,
+         dsn = here('analysis/data/derived_data/Grouse_redd_dig.gpkg'),
+         delete_dsn = T)
 
 #####Corduroy
 
